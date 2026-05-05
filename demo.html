@@ -190,64 +190,141 @@
     margin-bottom: 18px;
   }
 
-  /* === Panel 1: Event Stream === */
-  .events-feed {
+  /* === Panel 1: War Room (dialogue + trade wire) === */
+  .warroom {
     position: absolute;
     top: 100px; left: 20px; right: 20px; bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     overflow: hidden;
   }
-  .event-card {
+  .warroom-section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .warroom-dialogue { flex: 1.5; }
+  .warroom-trades   { flex: 1; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-label .live {
+    color: var(--coral);
+  }
+  .section-label .live::before {
+    content: '●';
+    margin-right: 4px;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+
+  /* Dialogue bubbles */
+  .dialogue-feed {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dialogue-item {
     background: var(--surface);
     border: 1px solid var(--line-soft);
     border-left: 2px solid var(--gold);
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
-    color: var(--ink-mute);
+    padding: 8px 10px;
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(-8px);
     animation: eventIn 0.5s ease-out forwards;
-    position: relative;
   }
-  .event-card.high {
-    border-left-color: var(--coral);
-  }
-  .event-card .event-time {
-    color: var(--ink-dim);
+  .dialogue-item.coral { border-left-color: var(--coral); }
+  .dialogue-item.teal  { border-left-color: var(--teal); }
+  .dialogue-item.media { border-left-color: var(--ink-dim); border-left-style: dashed; }
+  .dialogue-meta {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     letter-spacing: 0.08em;
+    color: var(--ink-dim);
     margin-bottom: 4px;
-  }
-  .event-card .event-body {
-    color: var(--ink);
-    font-size: 11px;
-    line-height: 1.4;
-  }
-  .event-card .event-tag {
-    display: inline-block;
-    background: rgba(201, 168, 87, 0.15);
-    color: var(--gold);
-    padding: 2px 6px;
-    margin-right: 6px;
-    font-size: 9px;
-    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
     text-transform: uppercase;
   }
-  .event-card.high .event-tag {
-    background: rgba(232, 101, 77, 0.18);
-    color: var(--coral);
+  .dialogue-meta .who { color: var(--gold); }
+  .dialogue-item.coral .dialogue-meta .who { color: var(--coral); }
+  .dialogue-item.teal  .dialogue-meta .who { color: var(--teal); }
+  .dialogue-item.media .dialogue-meta .who { color: var(--ink-mute); }
+  .dialogue-quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: 'opsz' 144;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  .dialogue-quote::before { content: '“'; color: var(--ink-dim); margin-right: 1px; }
+  .dialogue-quote::after  { content: '”'; color: var(--ink-dim); margin-left: 1px; }
+
+  /* Trade ticker */
+  .trade-feed {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .trade-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 5px 8px;
+    background: rgba(126, 182, 182, 0.04);
+    border-left: 2px solid var(--teal);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    opacity: 0;
+    transform: translateX(-6px);
+    animation: tradeIn 0.45s ease-out forwards;
+  }
+  .trade-row.gold { border-left-color: var(--gold); background: rgba(201, 168, 87, 0.05); }
+  .trade-row.cold { border-left-color: var(--ink-dim); background: rgba(91, 99, 120, 0.05); opacity: 0.6; }
+  .trade-row .trade-teams {
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .trade-row .trade-picks {
+    color: var(--ink-mute);
+    font-size: 9.5px;
+  }
+  .trade-row .trade-prob {
+    color: var(--gold);
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+  .trade-row.cold .trade-prob { color: var(--ink-dim); }
+  @keyframes tradeIn {
+    0%   { opacity: 0; transform: translateX(-6px); }
+    100% { opacity: 1; transform: translateX(0); }
   }
   @keyframes eventIn {
-    0%   { opacity: 0; transform: translateY(-12px); }
+    0%   { opacity: 0; transform: translateY(-8px); }
     100% { opacity: 1; transform: translateY(0); }
   }
-  .event-card.fading {
-    animation: eventOut 0.6s ease-in forwards;
+  .dialogue-item.fading, .trade-row.fading {
+    animation: fadeOut 0.5s ease-in forwards;
   }
-  @keyframes eventOut {
+  @keyframes fadeOut {
     0%   { opacity: 1; }
-    100% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 0; transform: translateY(6px); }
   }
 
   /* === Panel 2: Swarm Engine === */
@@ -311,11 +388,11 @@
     100% { opacity: 0; r: 220; stroke-width: 0.3; }
   }
 
-  /* === Panel 3: Outputs === */
+  /* === Panel 3: Pick Distributions === */
   .outputs {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     padding-top: 100px;
     height: 100%;
   }
@@ -324,24 +401,23 @@
     border: 1px solid var(--line-soft);
     padding: 12px 14px;
     border-radius: 2px;
-    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
   }
+  .output-block.distributions { flex: 1.6; overflow: hidden; }
+  .output-block.alerts-block  { flex: 0.7; }
   .output-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     letter-spacing: 0.18em;
     color: var(--ink-dim);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
   }
-  .output-label .live {
-    color: var(--coral);
-  }
+  .output-label .live { color: var(--coral); }
   .output-label .live::before {
     content: '●';
     margin-right: 4px;
@@ -352,46 +428,85 @@
     50%      { opacity: 0.4; }
   }
 
-  .mini-river {
-    width: 100%;
+  /* Pick distribution rows */
+  .dist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     flex: 1;
-    min-height: 80px;
+    overflow: hidden;
   }
-
-  /* Divergence matrix */
-  .div-mini {
+  .dist-row {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
   }
-  .div-mini-row {
-    display: grid;
-    grid-template-columns: 60px 1fr;
-    gap: 8px;
-    align-items: center;
+  .dist-row-head {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
-  .div-mini-name {
-    font-family: 'Fraunces', serif;
+  .dist-row-head .pick-num {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .dist-row-head .top-pick {
+    color: var(--ink);
     font-style: italic;
-    font-size: 11px;
+    font-family: 'Fraunces', serif;
+    font-size: 10.5px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .dist-bar {
+    display: flex;
+    height: 12px;
+    background: #1a1f2c;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .dist-seg {
+    height: 100%;
+    transition: flex 700ms cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+  }
+  .dist-seg.gold { background: var(--gold); }
+  .dist-seg.coral { background: var(--coral); opacity: 0.85; }
+  .dist-seg.teal { background: var(--teal); opacity: 0.8; }
+  .dist-seg.warm { background: #9a7e3f; }
+  .dist-seg.dim { background: #3d4658; }
+  .dist-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
     color: var(--ink-mute);
+    letter-spacing: 0.04em;
   }
-  .div-mini-cells {
-    display: grid;
-    grid-template-columns: repeat(32, 1fr);
-    gap: 1px;
-    height: 11px;
+  .dist-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .div-mini-cell {
-    background: #22293a;
-    transition: background 600ms ease;
+  .dist-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
   }
+  .dist-legend .lg-gold { color: var(--gold); }
+  .dist-legend .lg-coral { color: var(--coral); }
+  .dist-legend .lg-teal { color: var(--teal); }
+  .dist-legend .lg-warm { color: #9a7e3f; }
+  .dist-legend .lg-dim { color: #5b6378; }
 
   /* Alerts */
-  .alerts-block {
-    flex: 0.6;
-  }
   .alert {
     display: flex;
     justify-content: space-between;
@@ -415,17 +530,13 @@
     background: rgba(201, 168, 87, 0.05);
     border-left-color: var(--gold);
   }
-  .alert .alert-label {
-    color: var(--ink);
-  }
+  .alert .alert-label { color: var(--ink); }
   .alert .alert-tag {
     color: var(--coral);
     font-size: 9px;
     letter-spacing: 0.08em;
   }
-  .alert.gold .alert-tag {
-    color: var(--gold);
-  }
+  .alert.gold .alert-tag { color: var(--gold); }
 
   /* === Pipes between panels === */
   .pipe {
@@ -517,7 +628,7 @@
     .panel + .panel { border-left: none; border-top: 1px solid var(--line-soft); }
     .pipe { display: none; }
     .outputs { padding-top: 60px; }
-    .events-feed { top: 80px; }
+    .warroom { top: 80px; }
   }
 </style>
 </head>
@@ -542,19 +653,29 @@
   <!-- Three panels -->
   <div class="panels">
 
-    <!-- Panel 1: Events -->
+    <!-- Panel 1: War Room -->
     <div class="panel" id="panel-events">
-      <div class="panel-eyebrow"><span class="num">I</span><span>Events</span></div>
-      <div class="panel-title">Inputs from the field.</div>
-      <div class="panel-sub">Combine · pro days · visits · leaks</div>
-      <div class="events-feed" id="events-feed"></div>
+      <div class="panel-eyebrow"><span class="num">I</span><span>War Rooms</span></div>
+      <div class="panel-title">525 personas, talking.</div>
+      <div class="panel-sub">GMs · scouts · coaches · agents · beat writers · owners</div>
+
+      <div class="warroom">
+        <div class="warroom-section warroom-dialogue">
+          <div class="section-label"><span>Dialogue stream</span><span class="live">LIVE</span></div>
+          <div class="dialogue-feed" id="dialogue-feed"></div>
+        </div>
+        <div class="warroom-section warroom-trades">
+          <div class="section-label"><span>Trade wire</span><span class="live">LIVE</span></div>
+          <div class="trade-feed" id="trade-feed"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Panel 2: Swarm Engine -->
     <div class="panel" id="panel-engine">
       <div class="panel-eyebrow" style="position: relative; z-index: 4;"><span class="num">II</span><span>MiroFish Swarm</span></div>
-      <div class="panel-title" style="position: relative; z-index: 4;">525 minds, simulated.</div>
-      <div class="panel-sub" style="position: relative; z-index: 4;">32 war rooms · media · market · 10k parallel sims</div>
+      <div class="panel-title" style="position: relative; z-index: 4;">10,000 drafts, in parallel.</div>
+      <div class="panel-sub" style="position: relative; z-index: 4;">Persona memory · GraphRAG board · sentiment cascades</div>
 
       <svg class="engine-svg" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -592,83 +713,46 @@
       <div class="engine-meta">
         <div class="stat-cell">
           <span class="stat-num" id="stat-agents">525</span>
-          <span>Agents active</span>
+          <span>Personas with memory</span>
         </div>
         <div class="stat-cell" style="text-align: center;">
           <span class="stat-num" id="stat-events">— —</span>
-          <span>Events processed</span>
+          <span>Cascades resolved</span>
         </div>
         <div class="stat-cell" style="text-align: right;">
           <span class="stat-num" id="stat-sims">10k</span>
-          <span>Parallel sims</span>
+          <span>Parallel boards</span>
         </div>
       </div>
     </div>
 
-    <!-- Panel 3: Outputs -->
+    <!-- Panel 3: Pick Distributions -->
     <div class="panel" id="panel-outputs">
       <div class="panel-eyebrow"><span class="num">III</span><span>Emergence</span></div>
-      <div class="panel-title">What the swarm reveals.</div>
-      <div class="panel-sub">Live valuations · divergence · signals</div>
+      <div class="panel-title">What 10,000 drafts say.</div>
+      <div class="panel-sub">Pick distributions · per slot · updated each cascade</div>
 
       <div class="outputs">
-        <!-- Mini river plot -->
-        <div class="output-block">
+        <!-- Pick distribution per slot -->
+        <div class="output-block distributions">
           <div class="output-label">
-            <span>Projected slot · Mason J.</span>
+            <span>Pick probability · top slots</span>
             <span class="live">LIVE</span>
           </div>
-          <svg class="mini-river" viewBox="0 0 280 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#c9a857" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#c9a857" stop-opacity="0.05"/>
-              </linearGradient>
-            </defs>
-            <!-- Grid -->
-            <line x1="0" y1="30" x2="280" y2="30" stroke="#1f2433" stroke-width="0.5"/>
-            <line x1="0" y1="60" x2="280" y2="60" stroke="#1f2433" stroke-width="0.5"/>
-            <line x1="0" y1="90" x2="280" y2="90" stroke="#1f2433" stroke-width="0.5"/>
-            <!-- Confidence band -->
-            <path d="M 0,50 C 60,45 110,40 160,55 C 210,68 250,72 280,60 L 280,80 C 250,92 210,90 160,82 C 110,72 60,75 0,80 Z" fill="url(#bandGrad)"/>
-            <!-- Trajectories container -->
-            <g id="river-trajectories" stroke-width="0.7" fill="none"></g>
-            <!-- Median -->
-            <path d="M 0,60 C 60,55 110,50 160,65 C 210,76 250,80 280,68"
-                  stroke="#ede4d3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-
-        <!-- Divergence matrix -->
-        <div class="output-block">
-          <div class="output-label">
-            <span>Divergence — top contested</span>
-            <span class="mono" style="color: var(--ink-dim);">32T</span>
-          </div>
-          <div class="div-mini" id="div-mini">
-            <div class="div-mini-row">
-              <span class="div-mini-name">Hunter, T.</span>
-              <div class="div-mini-cells" id="dm-row-0"></div>
-            </div>
-            <div class="div-mini-row">
-              <span class="div-mini-name">Mason, J.</span>
-              <div class="div-mini-cells" id="dm-row-1"></div>
-            </div>
-            <div class="div-mini-row">
-              <span class="div-mini-name">Banks, K.</span>
-              <div class="div-mini-cells" id="dm-row-2"></div>
-            </div>
-            <div class="div-mini-row">
-              <span class="div-mini-name">Walker, M.</span>
-              <div class="div-mini-cells" id="dm-row-3"></div>
-            </div>
+          <div class="dist-list" id="dist-list"></div>
+          <div class="dist-legend" style="margin-top: 10px;">
+            <span class="lg-gold">Mason</span>
+            <span class="lg-coral">Hunter</span>
+            <span class="lg-teal">Banks</span>
+            <span class="lg-warm">Walker</span>
+            <span class="lg-dim">field</span>
           </div>
         </div>
 
         <!-- Alerts -->
         <div class="output-block alerts-block">
           <div class="output-label">
-            <span>Signals</span>
+            <span>Emergent signals</span>
             <span class="live">LIVE</span>
           </div>
           <div id="alerts"></div>
@@ -685,13 +769,13 @@
   <!-- Bottom legend -->
   <div class="legend-strip">
     <span class="legend-flow">
-      <span style="color: var(--ink);">Events</span>
+      <span style="color: var(--ink);">War rooms</span>
       <span class="legend-arrow">→</span>
       <span style="color: var(--ink);">Swarm</span>
       <span class="legend-arrow">→</span>
-      <span style="color: var(--ink);">Emergence</span>
+      <span style="color: var(--ink);">Pick distributions</span>
     </span>
-    <span style="color: var(--ink-dim);">14s loop · live mode</span>
+    <span style="color: var(--ink-dim);">10k parallel boards · live mode</span>
   </div>
 </div>
 
@@ -699,30 +783,61 @@
 (function() {
   'use strict';
 
-  // === DATA: realistic combine event vocabulary ===
-  const eventBank = [
-    { tag: 'FORTY',   body: 'Mason, J. — 4.34s',          high: true,  outputBoost: 'mason' },
-    { tag: 'VERT',    body: 'Banks, K. — 41.5"',          high: false, outputBoost: 'banks' },
-    { tag: 'BENCH',   body: 'Walker, M. — 27 reps',       high: false, outputBoost: 'walker' },
-    { tag: 'PRO DAY', body: 'Hunter, T. — confirmed 4.31', high: true, outputBoost: 'hunter' },
-    { tag: 'TOP-30',  body: 'NYJ ↔ J. Mason',             high: false, outputBoost: 'mason' },
-    { tag: 'MEDICAL', body: 'Walker, M. — re-cleared',    high: true,  outputBoost: 'walker' },
-    { tag: 'SHUTTLE', body: 'Hunter, T. — 3.96s',         high: false, outputBoost: 'hunter' },
-    { tag: 'BROAD',   body: 'Banks, K. — 11\'2"',         high: false, outputBoost: 'banks' },
-    { tag: 'LEAK',    body: 'PHI war room — Hunter rising', high: true, outputBoost: 'hunter' },
-    { tag: 'MOCK',    body: 'DJ #4 — Mason top-15',       high: false, outputBoost: 'mason' },
-    { tag: 'INTW',    body: 'Walker, M. — strong board',  high: false, outputBoost: 'walker' },
-    { tag: 'FORTY',   body: 'Banks, K. — 4.42s',          high: false, outputBoost: 'banks' },
+  // === DATA: war-room dialogue (persona-attributed) ===
+  // tone: 'gold' = team internal, 'coral' = high-leverage / leak, 'teal' = agent, 'media' = beat writer
+  const dialogueBank = [
+    { who: 'JL · SF · GM',       room: 'INTERNAL',  tone: 'gold',  q: "Walker's shoulder gives me pause. We hold at eleven.",          boost: 'walker', high: true },
+    { who: 'BB · BUF · GM',      room: 'STRATEGY',  tone: 'gold',  q: "If Hunter slides past eight, we package twelve plus next-year two.", boost: 'hunter', high: true },
+    { who: 'HR · PHI · DC',      room: 'POSITION',  tone: 'gold',  q: "Banks is our nickel. Don't sleep on him at sixteen.",            boost: 'banks',  high: false },
+    { who: 'AS · CHI · OC',      room: 'POSITION',  tone: 'gold',  q: "Mason gives our QB a YAC weapon we don't have.",                 boost: 'mason',  high: false },
+    { who: 'MM · NYJ · SCOUT',   room: 'BOARD',     tone: 'gold',  q: "Mason's tape said 4.45. The 4.34 doesn't surprise me.",          boost: 'mason',  high: false },
+    { who: 'KS · KC · GM',       room: 'INTERNAL',  tone: 'gold',  q: "Let the room come to us. Trade-back if Banks is gone.",          boost: 'banks',  high: false },
+    { who: 'TR · JAX · OWNER',   room: 'OVERRIDE',  tone: 'coral', q: "I want a name. Trade up.",                                       boost: 'hunter', high: true },
+    { who: 'JS · NE · GM',       room: 'STRATEGY',  tone: 'coral', q: "Shadow Hunter. If PHI bites, we leak.",                          boost: 'hunter', high: true },
+    { who: 'PD · NFLN · BEAT',   room: 'MEDIA',     tone: 'media', q: "Source: ARI taking Banks at nine — locked.",                     boost: 'banks',  high: true },
+    { who: 'JD · ESPN · BEAT',   room: 'MEDIA',     tone: 'media', q: "PHI internal: Walker over Hunter if both there.",               boost: 'walker', high: true },
+    { who: 'CAA · MASON',        room: 'AGENT',     tone: 'teal',  q: "Holding the pre-draft visit with Bears. Floor is top-eight.",   boost: 'mason',  high: false },
+    { who: 'KLUTCH · HUNTER',    room: 'AGENT',     tone: 'teal',  q: "Won't take a meeting past eleven. Top-ten or we wait.",          boost: 'hunter', high: false },
+    { who: 'DH · DEN · DC',      room: 'POSITION',  tone: 'gold',  q: "Walker tested as a corner. The room sees safety. Different grades.", boost: 'walker', high: false },
+    { who: 'IO · IND · GM',      room: 'BOARD',     tone: 'gold',  q: "If Mason and Banks both go top-five, we pivot to Walker at twelve.", boost: 'walker', high: false },
+  ];
+
+  // === DATA: trade wire (agent-to-agent negotiation outputs) ===
+  const tradeBank = [
+    { from: 'PHI', to: 'ARI', give: '#16 + #50',           get: '#9',         prob: 78, status: 'live' },
+    { from: 'SF',  to: 'CHI', give: '#11 + #78',           get: '#5',         prob: 44, status: 'live' },
+    { from: 'DAL', to: 'TEN', give: '#24',                  get: '#28 + #132', prob: 62, status: 'live' },
+    { from: 'BUF', to: 'NE',  give: '#12 + 2026·2',         get: '#8',         prob: 51, status: 'live' },
+    { from: 'KC',  to: 'JAX', give: '#32 + #75',            get: '#17',        prob: 33, status: 'cold' },
+    { from: 'NYJ', to: 'IND', give: '#7',                   get: '#12 + #45',  prob: 68, status: 'live' },
+    { from: 'PIT', to: 'CLE', give: '#20 + #90',            get: '#14',        prob: 40, status: 'live' },
+    { from: 'GB',  to: 'HOU', give: '#23 + 2026·3',         get: '#19',        prob: 55, status: 'live' },
+    { from: 'LAR', to: 'SEA', give: '#26',                  get: '#27 + #96',  prob: 71, status: 'live' },
   ];
 
   const alertBank = [
-    { tag: 'VALUE POCKET', label: 'Banks K. · Δ +18 slots', gold: true },
-    { tag: 'TRADE-UP',     label: 'PHI #16 → #9 · 78%',     gold: false },
-    { tag: 'DIVERGENCE',   label: 'Hunter T. · variance +47%', gold: false },
-    { tag: 'CONSENSUS',    label: 'Mason J. · top-12 lock',  gold: true },
-    { tag: 'TRADE-UP',     label: 'SF #11 → #5 · 64%',       gold: false },
-    { tag: 'VALUE POCKET', label: 'Walker M. · Δ +12 slots', gold: true },
+    { tag: 'VALUE POCKET', label: 'Banks K. · Δ +18 slots',     gold: true },
+    { tag: 'TRADE-UP',     label: 'PHI #16 → #9 · 78%',          gold: false },
+    { tag: 'DIVERGENCE',   label: 'Hunter T. · variance +47%',   gold: false },
+    { tag: 'CONSENSUS',    label: 'Mason J. · top-12 lock',      gold: true },
+    { tag: 'TRADE-UP',     label: 'SF #11 → #5 · 64%',           gold: false },
+    { tag: 'VALUE POCKET', label: 'Walker M. · Δ +12 slots',     gold: true },
+    { tag: 'CASCADE',      label: 'Leak → 4 boards reweighted',  gold: false },
+    { tag: 'OWNER OVERRIDE',label:'JAX moves up · 31% → 58%',    gold: false },
   ];
+
+  // === DATA: pick distributions (top-of-board slots) ===
+  // Each segment: [boost-key, weight]. Will rebalance live as dialogue triggers.
+  // Order of segments in the bar: gold(Mason), coral(Hunter), teal(Banks), warm(Walker), dim(field)
+  const slotData = [
+    { pick: 1, team: 'CHI', dist: { mason: 67, hunter: 18, banks:  9, walker:  3, field:  3 } },
+    { pick: 3, team: 'NE',  dist: { mason: 22, hunter: 44, banks: 12, walker: 14, field:  8 } },
+    { pick: 5, team: 'SF',  dist: { mason:  6, hunter: 41, banks: 28, walker: 14, field: 11 } },
+    { pick: 9, team: 'ARI', dist: { mason:  3, hunter: 21, banks: 52, walker: 12, field: 12 } },
+    { pick: 12,team: 'NYJ', dist: { mason:  4, hunter: 18, banks: 24, walker: 36, field: 18 } },
+  ];
+  const segOrder = ['mason', 'hunter', 'banks', 'walker', 'field'];
+  const segClass = { mason: 'gold', hunter: 'coral', banks: 'teal', walker: 'warm', field: 'dim' };
 
   // === BUILD: swarm graph ===
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -805,121 +920,148 @@
     edgesG.appendChild(edge);
   }
 
-  // === Initial divergence matrix fill ===
-  function shadeForValue(v) {
-    if (v < 0.15) return '#e8654d';
-    if (v < 0.35) return '#d9b86b';
-    if (v < 0.55) return '#9a7e3f';
-    if (v < 0.75) return '#3d4658';
-    return '#22293a';
-  }
-  const dmRows = [];
-  for (let r = 0; r < 4; r++) {
-    const row = document.getElementById('dm-row-' + r);
-    const cells = [];
-    for (let i = 0; i < 32; i++) {
-      const cell = document.createElement('div');
-      cell.className = 'div-mini-cell';
-      cell.style.background = shadeForValue(0.4 + (Math.random() - 0.5) * 0.5);
-      row.appendChild(cell);
-      cells.push(cell);
-    }
-    dmRows.push(cells);
+  // === Initial pick-distribution rows ===
+  const distList = document.getElementById('dist-list');
+  const slotEls = [];
+
+  function renderDistRow(slot) {
+    const total = segOrder.reduce((s, k) => s + slot.dist[k], 0);
+    const segEls = {};
+    const row = document.createElement('div');
+    row.className = 'dist-row';
+    row.innerHTML = `
+      <div class="dist-row-head">
+        <span><span class="pick-num">PICK ${String(slot.pick).padStart(2,'0')}</span> · ${slot.team}</span>
+        <span class="top-pick"></span>
+      </div>
+      <div class="dist-bar"></div>
+    `;
+    const bar = row.querySelector('.dist-bar');
+    segOrder.forEach(k => {
+      const seg = document.createElement('div');
+      seg.className = 'dist-seg ' + segClass[k];
+      seg.style.flex = String(slot.dist[k]);
+      seg.title = k + ' ' + slot.dist[k] + '%';
+      bar.appendChild(seg);
+      segEls[k] = seg;
+    });
+    distList.appendChild(row);
+    slotEls.push({ slot, row, segEls, topEl: row.querySelector('.top-pick') });
+    updateTopPick(slotEls[slotEls.length - 1]);
   }
 
-  // === Initial river plot trajectories ===
-  const riverG = document.getElementById('river-trajectories');
-  function smoothPath(pts) {
-    let d = `M ${pts[0].x},${pts[0].y}`;
-    for (let i = 1; i < pts.length; i++) {
-      const prev = pts[i - 1];
-      const curr = pts[i];
-      const cx1 = prev.x + (curr.x - prev.x) * 0.5;
-      const cy1 = prev.y;
-      const cx2 = prev.x + (curr.x - prev.x) * 0.5;
-      const cy2 = curr.y;
-      d += ` C ${cx1},${cy1} ${cx2},${cy2} ${curr.x},${curr.y}`;
-    }
-    return d;
+  function updateTopPick(entry) {
+    const { slot, topEl } = entry;
+    let topKey = 'mason', topVal = -1;
+    segOrder.forEach(k => {
+      if (slot.dist[k] > topVal) { topVal = slot.dist[k]; topKey = k; }
+    });
+    const nameMap = { mason: 'Mason', hunter: 'Hunter', banks: 'Banks', walker: 'Walker', field: 'field' };
+    topEl.textContent = `${nameMap[topKey]} · ${topVal}%`;
   }
-  function genTrajectory() {
-    const anchors = [
-      { x: 0,   y: 60 },
-      { x: 60,  y: 50 + (Math.random() - 0.5) * 18 },
-      { x: 110, y: 50 + (Math.random() - 0.5) * 22 },
-      { x: 160, y: 65 + (Math.random() - 0.5) * 28 },
-      { x: 210, y: 75 + (Math.random() - 0.5) * 24 },
-      { x: 280, y: 68 + (Math.random() - 0.5) * 22 },
-    ];
-    return smoothPath(anchors);
-  }
-  for (let i = 0; i < 14; i++) {
-    const path = document.createElementNS(svgNS, 'path');
-    path.setAttribute('d', genTrajectory());
-    path.setAttribute('stroke', i % 6 === 0 ? '#e8654d' : '#c9a857');
-    path.setAttribute('opacity', i % 6 === 0 ? '0.4' : '0.18');
-    path.setAttribute('stroke-width', '0.6');
-    path.setAttribute('fill', 'none');
-    riverG.appendChild(path);
+
+  slotData.forEach(renderDistRow);
+
+  function rebalanceDists(boostKey, magnitude) {
+    // Shift probability mass toward boostKey within each slot, drawing from others proportionally.
+    slotEls.forEach(entry => {
+      const d = entry.slot.dist;
+      const others = segOrder.filter(k => k !== boostKey);
+      const drawable = others.reduce((s, k) => s + d[k], 0);
+      if (drawable <= 0) return;
+      const shift = Math.min(magnitude, drawable * 0.4);
+      others.forEach(k => { d[k] = Math.max(0, d[k] - (d[k] / drawable) * shift); });
+      d[boostKey] = Math.min(95, d[boostKey] + shift);
+      // Round + renormalize to 100
+      let total = segOrder.reduce((s, k) => s + d[k], 0);
+      segOrder.forEach(k => { d[k] = Math.round(d[k] / total * 100); });
+      total = segOrder.reduce((s, k) => s + d[k], 0);
+      d.field += (100 - total);
+      // Apply to DOM via flex
+      segOrder.forEach(k => {
+        entry.segEls[k].style.flex = String(d[k]);
+        entry.segEls[k].title = k + ' ' + d[k] + '%';
+      });
+      updateTopPick(entry);
+    });
   }
 
   // === ANIMATION ENGINE ===
   let eventCounter = 0;
+  let dialogueIdx = 0;
+  let tradeIdx = 0;
   let pulseIdx = 0;
   let alertIdx = 0;
-  const eventsFeed = document.getElementById('events-feed');
+  const dialogueFeed = document.getElementById('dialogue-feed');
+  const tradeFeed = document.getElementById('trade-feed');
   const alertsContainer = document.getElementById('alerts');
   const statEvents = document.getElementById('stat-events');
   const panelEngine = document.getElementById('panel-engine');
   const demoEl = document.querySelector('.demo');
 
-  function nowTimeStr() {
-    const base = new Date();
-    base.setHours(14);
-    base.setMinutes(20 + Math.floor(eventCounter * 0.7));
-    base.setSeconds(Math.floor(Math.random() * 60));
-    return base.toTimeString().slice(0, 8);
-  }
-
   function spawnEvent() {
-    const ev = eventBank[eventCounter % eventBank.length];
+    const ev = dialogueBank[dialogueIdx % dialogueBank.length];
+    dialogueIdx++;
     eventCounter++;
     statEvents.textContent = String(eventCounter).padStart(3, '—').slice(-3);
 
-    // 1. Add event card to feed
-    const card = document.createElement('div');
-    card.className = 'event-card' + (ev.high ? ' high' : '');
-    card.innerHTML = `
-      <div class="event-time">${nowTimeStr()}</div>
-      <div class="event-body">
-        <span class="event-tag">${ev.tag}</span>
-        ${ev.body}
+    // 1. Add dialogue bubble
+    const item = document.createElement('div');
+    item.className = 'dialogue-item ' + ev.tone;
+    item.innerHTML = `
+      <div class="dialogue-meta">
+        <span class="who">${ev.who}</span>
+        <span>${ev.room}</span>
       </div>
+      <div class="dialogue-quote">${ev.q}</div>
     `;
-    eventsFeed.insertBefore(card, eventsFeed.firstChild);
-
-    // Keep feed length manageable
-    while (eventsFeed.children.length > 5) {
-      const last = eventsFeed.lastElementChild;
+    dialogueFeed.insertBefore(item, dialogueFeed.firstChild);
+    while (dialogueFeed.children.length > 4) {
+      const last = dialogueFeed.lastElementChild;
       last.classList.add('fading');
-      setTimeout(() => last.remove(), 600);
+      setTimeout(() => last.remove(), 500);
       break;
     }
 
-    // 2. Particle from events → swarm
+    // 2. Maybe spawn a trade row (every ~3rd event, or always on 'STRATEGY' rooms)
+    if (ev.room === 'STRATEGY' || ev.room === 'OVERRIDE' || dialogueIdx % 2 === 0) {
+      setTimeout(() => spawnTrade(), 700);
+    }
+
+    // 3. Particle from war-room → swarm
     setTimeout(() => spawnParticle(ev, 1), 400);
 
-    // 3. Pulse swarm + react team clusters
+    // 4. Pulse swarm + react team clusters
     setTimeout(() => {
       pulseSwarm(ev.high);
       flickerClusters(ev.high ? 14 : 8);
     }, 1700);
 
-    // 4. Particle from swarm → outputs
+    // 5. Particle from swarm → distribution panel
     setTimeout(() => spawnParticle(ev, 2), 2800);
 
-    // 5. Update outputs
-    setTimeout(() => updateOutputs(ev), 4000);
+    // 6. Rebalance pick distributions + emit a signal
+    setTimeout(() => updateOutputs(ev), 3600);
+  }
+
+  function spawnTrade() {
+    const t = tradeBank[tradeIdx % tradeBank.length];
+    tradeIdx++;
+    const row = document.createElement('div');
+    const cls = t.status === 'cold' ? 'cold' : (t.prob >= 60 ? 'gold' : '');
+    row.className = 'trade-row ' + cls;
+    row.innerHTML = `
+      <span class="trade-teams">${t.from} → ${t.to}</span>
+      <span class="trade-picks">${t.give} ⇄ ${t.get}</span>
+      <span class="trade-prob">${t.prob}%</span>
+    `;
+    tradeFeed.insertBefore(row, tradeFeed.firstChild);
+    while (tradeFeed.children.length > 4) {
+      const last = tradeFeed.lastElementChild;
+      last.classList.add('fading');
+      setTimeout(() => last.remove(), 500);
+      break;
+    }
   }
 
   function spawnParticle(ev, segment) {
@@ -1008,39 +1150,13 @@
   }
 
   function updateOutputs(ev) {
-    // 1. Update divergence matrix — pick a row, recolor a few cells
-    const rowMap = { hunter: 0, mason: 1, banks: 2, walker: 3 };
-    const rowIdx = rowMap[ev.outputBoost] !== undefined ? rowMap[ev.outputBoost] : Math.floor(Math.random() * 4);
-    const cells = dmRows[rowIdx];
-    // Recolor ~10 random cells
-    for (let i = 0; i < 10; i++) {
-      const idx = Math.floor(Math.random() * 32);
-      const v = ev.high ? Math.random() * 0.6 : 0.3 + Math.random() * 0.5;
-      cells[idx].style.background = shadeForValue(v);
+    // Rebalance pick distributions toward the prospect this dialogue boosted.
+    if (ev.boost && segOrder.includes(ev.boost)) {
+      const magnitude = ev.high ? 7 : 3;
+      rebalanceDists(ev.boost, magnitude);
     }
-
-    // 2. Add a new river trajectory + remove oldest
-    const newPath = document.createElementNS(svgNS, 'path');
-    newPath.setAttribute('d', genTrajectory());
-    newPath.setAttribute('stroke', ev.high ? '#e8654d' : '#c9a857');
-    newPath.setAttribute('opacity', '0');
-    newPath.setAttribute('stroke-width', '0.6');
-    newPath.setAttribute('fill', 'none');
-    riverG.appendChild(newPath);
-    newPath.animate([
-      { opacity: 0 },
-      { opacity: ev.high ? 0.4 : 0.22 }
-    ], { duration: 600, fill: 'forwards' });
-
-    if (riverG.children.length > 16) {
-      const oldest = riverG.firstElementChild;
-      oldest.animate([{ opacity: parseFloat(oldest.getAttribute('opacity')) || 0.2 }, { opacity: 0 }],
-                     { duration: 400, fill: 'forwards' });
-      setTimeout(() => oldest.remove(), 450);
-    }
-
-    // 3. Spawn an alert occasionally
-    if (Math.random() < 0.55) {
+    // Periodically spawn a signal
+    if (Math.random() < 0.6) {
       spawnAlert();
     }
   }
