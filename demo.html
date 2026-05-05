@@ -190,141 +190,137 @@
     margin-bottom: 18px;
   }
 
-  /* === Panel 1: War Room (dialogue + trade wire) === */
-  .warroom {
+  /* === Panel 1: Scenario Queue (parallel petri dishes) === */
+  .scenario-queue {
     position: absolute;
-    top: 100px; left: 20px; right: 20px; bottom: 24px;
+    top: 100px; left: 16px; right: 16px; bottom: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     overflow: hidden;
   }
-  .warroom-section {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .warroom-dialogue { flex: 1.5; }
-  .warroom-trades   { flex: 1; padding-top: 10px; border-top: 1px dashed var(--line); }
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .section-label .live {
-    color: var(--coral);
-  }
-  .section-label .live::before {
-    content: '●';
-    margin-right: 4px;
-    animation: blink 1.6s ease-in-out infinite;
-  }
-
-  /* Dialogue bubbles */
-  .dialogue-feed {
+  .scenario-grid {
     flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
-  .dialogue-item {
+  .scenario-cell {
     background: var(--surface);
     border: 1px solid var(--line-soft);
-    border-left: 2px solid var(--gold);
-    padding: 8px 10px;
-    opacity: 0;
-    transform: translateY(-8px);
-    animation: eventIn 0.5s ease-out forwards;
-  }
-  .dialogue-item.coral { border-left-color: var(--coral); }
-  .dialogue-item.teal  { border-left-color: var(--teal); }
-  .dialogue-item.media { border-left-color: var(--ink-dim); border-left-style: dashed; }
-  .dialogue-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    color: var(--ink-dim);
-    margin-bottom: 4px;
-    display: flex;
-    justify-content: space-between;
-    text-transform: uppercase;
-  }
-  .dialogue-meta .who { color: var(--gold); }
-  .dialogue-item.coral .dialogue-meta .who { color: var(--coral); }
-  .dialogue-item.teal  .dialogue-meta .who { color: var(--teal); }
-  .dialogue-item.media .dialogue-meta .who { color: var(--ink-mute); }
-  .dialogue-quote {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-variation-settings: 'opsz' 144;
-    font-size: 12.5px;
-    line-height: 1.35;
-    color: var(--ink);
-  }
-  .dialogue-quote::before { content: '“'; color: var(--ink-dim); margin-right: 1px; }
-  .dialogue-quote::after  { content: '”'; color: var(--ink-dim); margin-left: 1px; }
-
-  /* Trade ticker */
-  .trade-feed {
-    flex: 1;
-    overflow: hidden;
+    padding: 8px 6px 6px;
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-  }
-  .trade-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 8px;
     align-items: center;
-    padding: 5px 8px;
-    background: rgba(126, 182, 182, 0.04);
-    border-left: 2px solid var(--teal);
+    gap: 4px;
+    position: relative;
+    transition: all 380ms ease;
+    cursor: default;
+    overflow: hidden;
+  }
+  .scenario-cell.active {
+    border-color: rgba(201, 168, 87, 0.55);
+    background: rgba(201, 168, 87, 0.06);
+    box-shadow: 0 0 0 1px rgba(201, 168, 87, 0.2), 0 0 12px rgba(201, 168, 87, 0.15);
+  }
+  .scenario-cell::before {
+    content: attr(data-id);
+    position: absolute;
+    top: 4px; left: 6px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--ink-mute);
-    opacity: 0;
-    transform: translateX(-6px);
-    animation: tradeIn 0.45s ease-out forwards;
+    font-size: 7.5px;
+    letter-spacing: 0.16em;
+    color: var(--ink-dim);
   }
-  .trade-row.gold { border-left-color: var(--gold); background: rgba(201, 168, 87, 0.05); }
-  .trade-row.cold { border-left-color: var(--ink-dim); background: rgba(91, 99, 120, 0.05); opacity: 0.6; }
-  .trade-row .trade-teams {
-    color: var(--ink);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-  }
-  .trade-row .trade-picks {
-    color: var(--ink-mute);
-    font-size: 9.5px;
-  }
-  .trade-row .trade-prob {
+  .scenario-cell.active::after {
+    content: '● LIVE';
+    position: absolute;
+    top: 4px; right: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7px;
+    letter-spacing: 0.18em;
     color: var(--gold);
-    font-size: 10.5px;
-    font-weight: 600;
+    animation: blink 1.6s ease-in-out infinite;
   }
-  .trade-row.cold .trade-prob { color: var(--ink-dim); }
-  @keyframes tradeIn {
-    0%   { opacity: 0; transform: translateX(-6px); }
-    100% { opacity: 1; transform: translateX(0); }
+  .dish-mini {
+    width: 46px;
+    height: 46px;
+    margin-top: 12px;
+    flex-shrink: 0;
   }
-  @keyframes eventIn {
-    0%   { opacity: 0; transform: translateY(-8px); }
-    100% { opacity: 1; transform: translateY(0); }
+  .scenario-q {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: 'opsz' 9;
+    font-size: 10px;
+    line-height: 1.25;
+    color: var(--ink-mute);
+    text-align: center;
+    margin-top: 2px;
   }
-  .dialogue-item.fading, .trade-row.fading {
-    animation: fadeOut 0.5s ease-in forwards;
+  .scenario-cell.active .scenario-q { color: var(--ink); }
+  .queue-tally {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
   }
-  @keyframes fadeOut {
-    0%   { opacity: 1; }
-    100% { opacity: 0; transform: translateY(6px); }
+  .queue-tally .count { color: var(--gold); font-weight: 600; }
+
+  /* Mini-dish SVG nodes pulse animation */
+  .dish-mini circle.dot {
+    transition: opacity 600ms ease;
+  }
+
+  /* Floating dialogue bubbles inside Panel II (active dish) */
+  .dish-bubble {
+    position: absolute;
+    background: rgba(22, 26, 37, 0.92);
+    border: 1px solid rgba(201, 168, 87, 0.4);
+    backdrop-filter: blur(4px);
+    padding: 6px 10px;
+    max-width: 220px;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: bubbleFloat 4.5s ease-out forwards;
+    border-radius: 2px;
+  }
+  .dish-bubble.coral { border-color: rgba(232, 101, 77, 0.5); }
+  .dish-bubble.teal  { border-color: rgba(126, 182, 182, 0.5); }
+  .dish-bubble .who {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    display: block;
+  }
+  .dish-bubble.coral .who { color: var(--coral); }
+  .dish-bubble.teal  .who { color: var(--teal); }
+  .dish-bubble .quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: 'opsz' 12;
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  @keyframes bubbleFloat {
+    0%   { opacity: 0; transform: translateY(10px); }
+    12%  { opacity: 1; transform: translateY(0); }
+    82%  { opacity: 1; transform: translateY(-4px); }
+    100% { opacity: 0; transform: translateY(-12px); }
   }
 
   /* === Panel 2: Swarm Engine === */
@@ -388,15 +384,16 @@
     100% { opacity: 0; r: 220; stroke-width: 0.3; }
   }
 
-  /* === Panel 3: Pick Distributions === */
+  /* === Panel 3: Emergent Insights from this dish === */
   .outputs {
+    position: absolute;
+    top: 100px; left: 16px; right: 16px; bottom: 24px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding-top: 100px;
-    height: 100%;
+    gap: 12px;
+    overflow: hidden;
   }
-  .output-block {
+  .insight-block {
     background: var(--surface);
     border: 1px solid var(--line-soft);
     padding: 12px 14px;
@@ -404,10 +401,17 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
-  .output-block.distributions { flex: 1.6; overflow: hidden; }
-  .output-block.alerts-block  { flex: 0.7; }
-  .output-label {
+  .insight-block.primary {
+    border-left: 2px solid var(--gold);
+    flex: 1.3;
+  }
+  .insight-block.risk {
+    border-left: 2px solid var(--coral);
+    flex: 1;
+  }
+  .insight-block-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     letter-spacing: 0.18em;
@@ -416,9 +420,12 @@
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
-  .output-label .live { color: var(--coral); }
-  .output-label .live::before {
+  .insight-block.primary .insight-block-label > :first-child { color: var(--gold); }
+  .insight-block.risk    .insight-block-label > :first-child { color: var(--coral); }
+  .insight-block-label .live { color: var(--coral); }
+  .insight-block-label .live::before {
     content: '●';
     margin-right: 4px;
     animation: blink 1.6s ease-in-out infinite;
@@ -428,115 +435,51 @@
     50%      { opacity: 0.4; }
   }
 
-  /* Pick distribution rows */
-  .dist-list {
+  .insight-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 9px;
     flex: 1;
     overflow: hidden;
   }
-  .dist-row {
+  .insight-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-  }
-  .dist-row-head {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9.5px;
-    color: var(--ink-dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .dist-row-head .pick-num {
-    color: var(--gold);
-    font-weight: 600;
-  }
-  .dist-row-head .top-pick {
-    color: var(--ink);
-    font-style: italic;
-    font-family: 'Fraunces', serif;
-    font-size: 10.5px;
-    letter-spacing: 0;
-    text-transform: none;
-  }
-  .dist-bar {
-    display: flex;
-    height: 12px;
-    background: #1a1f2c;
-    border-radius: 1px;
-    overflow: hidden;
-  }
-  .dist-seg {
-    height: 100%;
-    transition: flex 700ms cubic-bezier(0.25, 1, 0.5, 1);
-    position: relative;
-  }
-  .dist-seg.gold { background: var(--gold); }
-  .dist-seg.coral { background: var(--coral); opacity: 0.85; }
-  .dist-seg.teal { background: var(--teal); opacity: 0.8; }
-  .dist-seg.warm { background: #9a7e3f; }
-  .dist-seg.dim { background: #3d4658; }
-  .dist-legend {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--ink-mute);
-    letter-spacing: 0.04em;
-  }
-  .dist-legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .dist-legend span::before {
-    content: '';
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    background: currentColor;
-  }
-  .dist-legend .lg-gold { color: var(--gold); }
-  .dist-legend .lg-coral { color: var(--coral); }
-  .dist-legend .lg-teal { color: var(--teal); }
-  .dist-legend .lg-warm { color: #9a7e3f; }
-  .dist-legend .lg-dim { color: #5b6378; }
-
-  /* Alerts */
-  .alert {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 8px;
-    margin-bottom: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    background: rgba(232, 101, 77, 0.05);
-    border-left: 2px solid var(--coral);
-    color: var(--ink-mute);
+    gap: 3px;
     opacity: 0;
-    transform: translateX(8px);
-    transition: all 400ms ease;
+    transform: translateY(6px);
+    animation: insightIn 0.55s ease-out forwards;
   }
-  .alert.visible {
-    opacity: 1;
-    transform: translateX(0);
+  .insight-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: 'opsz' 12;
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.35;
   }
-  .alert.gold {
-    background: rgba(201, 168, 87, 0.05);
-    border-left-color: var(--gold);
-  }
-  .alert .alert-label { color: var(--ink); }
-  .alert .alert-tag {
-    color: var(--coral);
-    font-size: 9px;
+  .insight-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
     letter-spacing: 0.08em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
   }
-  .alert.gold .alert-tag { color: var(--gold); }
+  .insight-meta .magnitude { color: var(--gold); font-weight: 600; }
+  .insight-block.risk .insight-meta .magnitude { color: var(--coral); }
+  @keyframes insightIn {
+    0%   { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .insight-item.fading {
+    animation: insightOut 0.4s ease-in forwards;
+  }
+  @keyframes insightOut {
+    0%   { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-4px); }
+  }
 
   /* === Pipes between panels === */
   .pipe {
@@ -627,8 +570,9 @@
     .panels { grid-template-columns: 1fr; grid-template-rows: 1fr 1.4fr 1fr; }
     .panel + .panel { border-left: none; border-top: 1px solid var(--line-soft); }
     .pipe { display: none; }
-    .outputs { padding-top: 60px; }
-    .warroom { top: 80px; }
+    .outputs { top: 80px; }
+    .scenario-queue { top: 80px; }
+    .scenario-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
 </style>
 </head>
@@ -653,29 +597,26 @@
   <!-- Three panels -->
   <div class="panels">
 
-    <!-- Panel 1: War Room -->
+    <!-- Panel 1: Scenario Queue (parallel petri dishes) -->
     <div class="panel" id="panel-events">
-      <div class="panel-eyebrow"><span class="num">I</span><span>War Rooms</span></div>
-      <div class="panel-title">525 personas, talking.</div>
-      <div class="panel-sub">GMs · scouts · coaches · agents · beat writers · owners</div>
+      <div class="panel-eyebrow"><span class="num">I</span><span>Scenario Queue</span></div>
+      <div class="panel-title">Dozens of what-ifs.</div>
+      <div class="panel-sub">Each dish runs a parallel reality.</div>
 
-      <div class="warroom">
-        <div class="warroom-section warroom-dialogue">
-          <div class="section-label"><span>Dialogue stream</span><span class="live">LIVE</span></div>
-          <div class="dialogue-feed" id="dialogue-feed"></div>
-        </div>
-        <div class="warroom-section warroom-trades">
-          <div class="section-label"><span>Trade wire</span><span class="live">LIVE</span></div>
-          <div class="trade-feed" id="trade-feed"></div>
+      <div class="scenario-queue">
+        <div class="scenario-grid" id="scenario-grid"></div>
+        <div class="queue-tally">
+          <span><span class="count" id="queue-count">24</span> dishes in rack</span>
+          <span>+ 18 queued</span>
         </div>
       </div>
     </div>
 
     <!-- Panel 2: Swarm Engine -->
     <div class="panel" id="panel-engine">
-      <div class="panel-eyebrow" style="position: relative; z-index: 4;"><span class="num">II</span><span>MiroFish Swarm</span></div>
-      <div class="panel-title" style="position: relative; z-index: 4;">10,000 drafts, in parallel.</div>
-      <div class="panel-sub" style="position: relative; z-index: 4;">Persona memory · GraphRAG board · sentiment cascades</div>
+      <div class="panel-eyebrow" style="position: relative; z-index: 4;"><span class="num">II</span><span>Active Dish · <span id="active-dish-id">S04</span></span></div>
+      <div class="panel-title" id="active-dish-q" style="position: relative; z-index: 4;">What if Hunter slides past pick 10?</div>
+      <div class="panel-sub" style="position: relative; z-index: 4;">Social cascade through 525 personas · 10k branches</div>
 
       <svg class="engine-svg" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -704,58 +645,56 @@
         <!-- Team and agent nodes -->
         <g id="nodes"></g>
 
+        <!-- Dish boundary -->
+        <circle cx="300" cy="280" r="200" fill="none" stroke="#2a3142" stroke-width="0.6" opacity="0.5" stroke-dasharray="2 3"/>
+        <circle cx="300" cy="280" r="206" fill="none" stroke="#1f2433" stroke-width="0.4" opacity="0.4"/>
+
         <!-- Center: media/market -->
         <circle cx="300" cy="280" r="44" fill="url(#mediaGlow)"/>
         <circle cx="300" cy="280" r="12" fill="#1d2230" stroke="#e8654d" stroke-width="1.4"/>
         <text x="300" y="284" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#e8654d" letter-spacing="0.18em">MEDIA</text>
       </svg>
 
+      <!-- Floating dialogue bubbles surface here during cascade -->
+      <div id="dish-bubbles"></div>
+
       <div class="engine-meta">
         <div class="stat-cell">
           <span class="stat-num" id="stat-agents">525</span>
-          <span>Personas with memory</span>
+          <span>Personas reacting</span>
         </div>
         <div class="stat-cell" style="text-align: center;">
           <span class="stat-num" id="stat-events">— —</span>
-          <span>Cascades resolved</span>
+          <span>Cascade waves</span>
         </div>
         <div class="stat-cell" style="text-align: right;">
           <span class="stat-num" id="stat-sims">10k</span>
-          <span>Parallel boards</span>
+          <span>Branches resolved</span>
         </div>
       </div>
     </div>
 
-    <!-- Panel 3: Pick Distributions -->
+    <!-- Panel 3: Emergent insights from this dish -->
     <div class="panel" id="panel-outputs">
-      <div class="panel-eyebrow"><span class="num">III</span><span>Emergence</span></div>
-      <div class="panel-title">What 10,000 drafts say.</div>
-      <div class="panel-sub">Pick distributions · per slot · updated each cascade</div>
+      <div class="panel-eyebrow"><span class="num">III</span><span>Emergent Insights</span></div>
+      <div class="panel-title">What teams would have missed.</div>
+      <div class="panel-sub">Surfaced from this dish · n=10k branches</div>
 
       <div class="outputs">
-        <!-- Pick distribution per slot -->
-        <div class="output-block distributions">
-          <div class="output-label">
-            <span>Pick probability · top slots</span>
+        <div class="insight-block primary">
+          <div class="insight-block-label">
+            <span>Insights</span>
             <span class="live">LIVE</span>
           </div>
-          <div class="dist-list" id="dist-list"></div>
-          <div class="dist-legend" style="margin-top: 10px;">
-            <span class="lg-gold">Mason</span>
-            <span class="lg-coral">Hunter</span>
-            <span class="lg-teal">Banks</span>
-            <span class="lg-warm">Walker</span>
-            <span class="lg-dim">field</span>
-          </div>
+          <div class="insight-list" id="insight-list"></div>
         </div>
 
-        <!-- Alerts -->
-        <div class="output-block alerts-block">
-          <div class="output-label">
-            <span>Emergent signals</span>
+        <div class="insight-block risk">
+          <div class="insight-block-label">
+            <span>Hidden risks</span>
             <span class="live">LIVE</span>
           </div>
-          <div id="alerts"></div>
+          <div class="insight-list" id="risk-list"></div>
         </div>
       </div>
     </div>
@@ -769,13 +708,13 @@
   <!-- Bottom legend -->
   <div class="legend-strip">
     <span class="legend-flow">
-      <span style="color: var(--ink);">War rooms</span>
+      <span style="color: var(--ink);">What-if scenarios</span>
       <span class="legend-arrow">→</span>
-      <span style="color: var(--ink);">Swarm</span>
+      <span style="color: var(--ink);">Social cascade</span>
       <span class="legend-arrow">→</span>
-      <span style="color: var(--ink);">Pick distributions</span>
+      <span style="color: var(--ink);">Emergent insights</span>
     </span>
-    <span style="color: var(--ink-dim);">10k parallel boards · live mode</span>
+    <span style="color: var(--ink-dim);">parallel petri dishes · live mode</span>
   </div>
 </div>
 
@@ -783,61 +722,137 @@
 (function() {
   'use strict';
 
-  // === DATA: war-room dialogue (persona-attributed) ===
-  // tone: 'gold' = team internal, 'coral' = high-leverage / leak, 'teal' = agent, 'media' = beat writer
-  const dialogueBank = [
-    { who: 'JL · SF · GM',       room: 'INTERNAL',  tone: 'gold',  q: "Walker's shoulder gives me pause. We hold at eleven.",          boost: 'walker', high: true },
-    { who: 'BB · BUF · GM',      room: 'STRATEGY',  tone: 'gold',  q: "If Hunter slides past eight, we package twelve plus next-year two.", boost: 'hunter', high: true },
-    { who: 'HR · PHI · DC',      room: 'POSITION',  tone: 'gold',  q: "Banks is our nickel. Don't sleep on him at sixteen.",            boost: 'banks',  high: false },
-    { who: 'AS · CHI · OC',      room: 'POSITION',  tone: 'gold',  q: "Mason gives our QB a YAC weapon we don't have.",                 boost: 'mason',  high: false },
-    { who: 'MM · NYJ · SCOUT',   room: 'BOARD',     tone: 'gold',  q: "Mason's tape said 4.45. The 4.34 doesn't surprise me.",          boost: 'mason',  high: false },
-    { who: 'KS · KC · GM',       room: 'INTERNAL',  tone: 'gold',  q: "Let the room come to us. Trade-back if Banks is gone.",          boost: 'banks',  high: false },
-    { who: 'TR · JAX · OWNER',   room: 'OVERRIDE',  tone: 'coral', q: "I want a name. Trade up.",                                       boost: 'hunter', high: true },
-    { who: 'JS · NE · GM',       room: 'STRATEGY',  tone: 'coral', q: "Shadow Hunter. If PHI bites, we leak.",                          boost: 'hunter', high: true },
-    { who: 'PD · NFLN · BEAT',   room: 'MEDIA',     tone: 'media', q: "Source: ARI taking Banks at nine — locked.",                     boost: 'banks',  high: true },
-    { who: 'JD · ESPN · BEAT',   room: 'MEDIA',     tone: 'media', q: "PHI internal: Walker over Hunter if both there.",               boost: 'walker', high: true },
-    { who: 'CAA · MASON',        room: 'AGENT',     tone: 'teal',  q: "Holding the pre-draft visit with Bears. Floor is top-eight.",   boost: 'mason',  high: false },
-    { who: 'KLUTCH · HUNTER',    room: 'AGENT',     tone: 'teal',  q: "Won't take a meeting past eleven. Top-ten or we wait.",          boost: 'hunter', high: false },
-    { who: 'DH · DEN · DC',      room: 'POSITION',  tone: 'gold',  q: "Walker tested as a corner. The room sees safety. Different grades.", boost: 'walker', high: false },
-    { who: 'IO · IND · GM',      room: 'BOARD',     tone: 'gold',  q: "If Mason and Banks both go top-five, we pivot to Walker at twelve.", boost: 'walker', high: false },
+  // === DATA: parallel "what-if" scenarios ===
+  // Each scenario is a petri dish — a perturbed reality the swarm plays out across 10k branches.
+  // - dialogue: persona reactions that surface as floating bubbles inside the active dish
+  // - insights: emergent patterns the swarm noticed (positive framing — what teams would have missed)
+  // - risks: hidden risks the swarm flagged (downside / value-trap / timing windows)
+  // - cascadeIntensity: 'wide' (most teams light up) vs 'tight' (a few rooms only)
+  // - cascadeColor: 'gold' (consensus-shifting) vs 'coral' (alarm) vs 'teal' (negotiation-heavy)
+  const scenarios = [
+    {
+      id: 'S04',
+      q: "What if Hunter slides past pick 10?",
+      cascadeIntensity: 'wide', cascadeColor: 'gold',
+      dialogue: [
+        { tone: 'gold',  who: 'BB · BUF · GM',     q: "If he's there at twelve, we don't blink." },
+        { tone: 'media', who: 'PD · NFLN',          q: "Three teams calling about moving up." },
+        { tone: 'coral', who: 'JS · NE · GM',       q: "Walker over Hunter if both there." },
+        { tone: 'teal',  who: 'KLUTCH · HUNTER',    q: "We'll cancel the visits past eight." },
+      ],
+      insights: [
+        { text: "73% of non-PHI teams reweight Walker upward",        magnitude: '+12 grade pts', conf: 'n=10k' },
+        { text: "Trade-up calls cluster between picks 8 and 11",      magnitude: '4× baseline',   conf: 'p<0.01' },
+        { text: "Cap-rich teams 2.3× more likely to make the leap",   magnitude: 'σ = 0.4',       conf: 'n=10k' },
+      ],
+      risks: [
+        { text: "PHI trade-up window closes at pick 11",              magnitude: '38% miss-rate', conf: 'critical' },
+        { text: "Walker overdrafted in 22% of branches",              magnitude: 'value risk',    conf: 'high' },
+      ],
+    },
+    {
+      id: 'S07',
+      q: "What if QB1 fails his Day-2 medical?",
+      cascadeIntensity: 'wide', cascadeColor: 'coral',
+      dialogue: [
+        { tone: 'coral', who: 'CB · CHI · GM',     q: "We're not taking the risk at one. Pivot to Mason." },
+        { tone: 'media', who: 'AR · ESPN',          q: "Source: shoulder, not arm. Recoverable." },
+        { tone: 'gold',  who: 'JL · SF · GM',       q: "If he slides to five, we've got a year-one redshirt." },
+        { tone: 'teal',  who: 'CAA · QB1',          q: "Independent re-eval scheduled Tuesday." },
+      ],
+      insights: [
+        { text: "Top-3 board reorders in 81% of branches",            magnitude: '3 picks moved', conf: 'n=10k' },
+        { text: "Mason vaults to #1 in 47% of branches",              magnitude: '+34 pts',       conf: 'n=10k' },
+        { text: "QB1 floor moves from pick 1 to pick 14 (median)",    magnitude: 'σ = 6 picks',   conf: 'p<0.01' },
+      ],
+      risks: [
+        { text: "QB-needy team at #14 reaches in 28% of branches",    magnitude: 'reach risk',    conf: 'critical' },
+        { text: "Trade market freezes for 90 minutes draft night",    magnitude: 'liquidity',     conf: 'high' },
+      ],
+    },
+    {
+      id: 'S11',
+      q: "What if a Mason character leak hits Friday?",
+      cascadeIntensity: 'tight', cascadeColor: 'coral',
+      dialogue: [
+        { tone: 'media', who: 'JD · ESPN',          q: "Sources: bar incident in February. No charges." },
+        { tone: 'gold',  who: 'JS · NE · GM',       q: "Our character grade barely moves. We knew." },
+        { tone: 'coral', who: 'TR · JAX · OWNER',   q: "We're out at four. Find another guy." },
+        { tone: 'teal',  who: 'CAA · MASON',        q: "We have the police report. Releasing tonight." },
+      ],
+      insights: [
+        { text: "Owner-driven rooms diverge 28% from analytics rooms", magnitude: 'σ = 0.6',      conf: 'n=10k' },
+        { text: "Mason's median slot moves from 1 to 6 — then back to 3 by Saturday", magnitude: 'rebound', conf: 'p<0.05' },
+        { text: "Three teams add character clauses to contingency",   magnitude: '+9% reach',     conf: 'n=10k' },
+      ],
+      risks: [
+        { text: "Owner override probability spikes in JAX, CAR",      magnitude: '2.1× baseline', conf: 'critical' },
+        { text: "Mason buying-window opens at #5 for one cycle",      magnitude: '12 min window', conf: 'high' },
+      ],
+    },
+    {
+      id: 'S13',
+      q: "What if Mason runs a verified 4.21?",
+      cascadeIntensity: 'wide', cascadeColor: 'gold',
+      dialogue: [
+        { tone: 'gold',  who: 'AS · CHI · OC',      q: "He's our pick at one. End of conversation." },
+        { tone: 'media', who: 'PD · NFLN',          q: "Fastest WR40 since Ross 2017." },
+        { tone: 'coral', who: 'BB · BUF · GM',      q: "Every WR-needy team reorders. Banks just dropped." },
+        { tone: 'teal',  who: 'CAA · MASON',        q: "Floor is now pick 1 overall. Period." },
+      ],
+      insights: [
+        { text: "Banks loses 18 slots median across boards",          magnitude: '−18 slots',     conf: 'n=10k' },
+        { text: "WR positional scarcity tightens by 41%",             magnitude: '6 → 11 teams',  conf: 'p<0.01' },
+        { text: "Top-12 trade-up volume increases 3.7×",              magnitude: '3.7× base',     conf: 'n=10k' },
+      ],
+      risks: [
+        { text: "Hype-driven reach: 2 teams take Mason in top-3 with no pre-day grade",        magnitude: 'overreach',     conf: 'critical' },
+        { text: "QB-needy team forced into pivot at pick 4",          magnitude: 'cascade',       conf: 'high' },
+      ],
+    },
+    {
+      id: 'S16',
+      q: "What if PHI trades up to #3?",
+      cascadeIntensity: 'tight', cascadeColor: 'teal',
+      dialogue: [
+        { tone: 'gold',  who: 'HR · PHI · DC',      q: "Hunter is our pick. We're paying the toll." },
+        { tone: 'gold',  who: 'JS · NE · GM',       q: "We accept the package. Walker at six is fine." },
+        { tone: 'media', who: 'AR · ESPN',          q: "PHI sends 16, 50, and a 2026 first." },
+        { tone: 'coral', who: 'KS · KC · GM',       q: "Now the run on pass-rushers shifts up two picks." },
+      ],
+      insights: [
+        { text: "Top-10 board compresses by 1.4 picks on average",    magnitude: 'compression',   conf: 'n=10k' },
+        { text: "Banks falls into NYJ's range in 64% of branches",    magnitude: '+24% NYJ-Banks',conf: 'p<0.01' },
+        { text: "PHI's net cost is 40 chart-points over expected",    magnitude: 'overpay',       conf: 'n=10k' },
+      ],
+      risks: [
+        { text: "If Hunter is gone at #3, PHI has no plan B in 18% of branches", magnitude: 'plan-B gap',    conf: 'critical' },
+        { text: "PHI cap impact 2027: −$8M flexibility",              magnitude: 'cap risk',      conf: 'high' },
+      ],
+    },
+    {
+      id: 'S19',
+      q: "What if a top-5 GM is fired draft week?",
+      cascadeIntensity: 'wide', cascadeColor: 'coral',
+      dialogue: [
+        { tone: 'coral', who: 'TR · JAX · OWNER',   q: "Asst GM is taking the call. Board is intact." },
+        { tone: 'media', who: 'JD · ESPN',          q: "Reports: scouting staff resigns en masse." },
+        { tone: 'gold',  who: 'BB · BUF · GM',      q: "Their war room is now an analytics-only room. Different priors." },
+        { tone: 'teal',  who: 'KLUTCH · HUNTER',    q: "We're not visiting JAX. New regime, no relationship." },
+      ],
+      insights: [
+        { text: "JAX board variance jumps 4× — picks become unpredictable", magnitude: '4× σ',          conf: 'n=10k' },
+        { text: "Trade-down probability for JAX rises from 11% to 38%", magnitude: '+27 pts',       conf: 'p<0.01' },
+        { text: "Adjacent teams (#3, #5) hedge with later-round shifts", magnitude: '2-tier shift', conf: 'n=10k' },
+      ],
+      risks: [
+        { text: "JAX overpays in trade-down: 28% lose chart-value",   magnitude: 'value drain',   conf: 'critical' },
+        { text: "Top-5 prospect sliding probability +41%",            magnitude: 'falling-knife', conf: 'high' },
+      ],
+    },
   ];
 
-  // === DATA: trade wire (agent-to-agent negotiation outputs) ===
-  const tradeBank = [
-    { from: 'PHI', to: 'ARI', give: '#16 + #50',           get: '#9',         prob: 78, status: 'live' },
-    { from: 'SF',  to: 'CHI', give: '#11 + #78',           get: '#5',         prob: 44, status: 'live' },
-    { from: 'DAL', to: 'TEN', give: '#24',                  get: '#28 + #132', prob: 62, status: 'live' },
-    { from: 'BUF', to: 'NE',  give: '#12 + 2026·2',         get: '#8',         prob: 51, status: 'live' },
-    { from: 'KC',  to: 'JAX', give: '#32 + #75',            get: '#17',        prob: 33, status: 'cold' },
-    { from: 'NYJ', to: 'IND', give: '#7',                   get: '#12 + #45',  prob: 68, status: 'live' },
-    { from: 'PIT', to: 'CLE', give: '#20 + #90',            get: '#14',        prob: 40, status: 'live' },
-    { from: 'GB',  to: 'HOU', give: '#23 + 2026·3',         get: '#19',        prob: 55, status: 'live' },
-    { from: 'LAR', to: 'SEA', give: '#26',                  get: '#27 + #96',  prob: 71, status: 'live' },
-  ];
-
-  const alertBank = [
-    { tag: 'VALUE POCKET', label: 'Banks K. · Δ +18 slots',     gold: true },
-    { tag: 'TRADE-UP',     label: 'PHI #16 → #9 · 78%',          gold: false },
-    { tag: 'DIVERGENCE',   label: 'Hunter T. · variance +47%',   gold: false },
-    { tag: 'CONSENSUS',    label: 'Mason J. · top-12 lock',      gold: true },
-    { tag: 'TRADE-UP',     label: 'SF #11 → #5 · 64%',           gold: false },
-    { tag: 'VALUE POCKET', label: 'Walker M. · Δ +12 slots',     gold: true },
-    { tag: 'CASCADE',      label: 'Leak → 4 boards reweighted',  gold: false },
-    { tag: 'OWNER OVERRIDE',label:'JAX moves up · 31% → 58%',    gold: false },
-  ];
-
-  // === DATA: pick distributions (top-of-board slots) ===
-  // Each segment: [boost-key, weight]. Will rebalance live as dialogue triggers.
-  // Order of segments in the bar: gold(Mason), coral(Hunter), teal(Banks), warm(Walker), dim(field)
-  const slotData = [
-    { pick: 1, team: 'CHI', dist: { mason: 67, hunter: 18, banks:  9, walker:  3, field:  3 } },
-    { pick: 3, team: 'NE',  dist: { mason: 22, hunter: 44, banks: 12, walker: 14, field:  8 } },
-    { pick: 5, team: 'SF',  dist: { mason:  6, hunter: 41, banks: 28, walker: 14, field: 11 } },
-    { pick: 9, team: 'ARI', dist: { mason:  3, hunter: 21, banks: 52, walker: 12, field: 12 } },
-    { pick: 12,team: 'NYJ', dist: { mason:  4, hunter: 18, banks: 24, walker: 36, field: 18 } },
-  ];
   const segOrder = ['mason', 'hunter', 'banks', 'walker', 'field'];
-  const segClass = { mason: 'gold', hunter: 'coral', banks: 'teal', walker: 'warm', field: 'dim' };
 
   // === BUILD: swarm graph ===
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -920,210 +935,183 @@
     edgesG.appendChild(edge);
   }
 
-  // === Initial pick-distribution rows ===
-  const distList = document.getElementById('dist-list');
-  const slotEls = [];
+  // === Build the scenario queue (Panel I): a grid of mini petri dishes ===
+  const scenarioGrid = document.getElementById('scenario-grid');
+  const queueCount = document.getElementById('queue-count');
 
-  function renderDistRow(slot) {
-    const total = segOrder.reduce((s, k) => s + slot.dist[k], 0);
-    const segEls = {};
-    const row = document.createElement('div');
-    row.className = 'dist-row';
-    row.innerHTML = `
-      <div class="dist-row-head">
-        <span><span class="pick-num">PICK ${String(slot.pick).padStart(2,'0')}</span> · ${slot.team}</span>
-        <span class="top-pick"></span>
-      </div>
-      <div class="dist-bar"></div>
-    `;
-    const bar = row.querySelector('.dist-bar');
-    segOrder.forEach(k => {
-      const seg = document.createElement('div');
-      seg.className = 'dist-seg ' + segClass[k];
-      seg.style.flex = String(slot.dist[k]);
-      seg.title = k + ' ' + slot.dist[k] + '%';
-      bar.appendChild(seg);
-      segEls[k] = seg;
-    });
-    distList.appendChild(row);
-    slotEls.push({ slot, row, segEls, topEl: row.querySelector('.top-pick') });
-    updateTopPick(slotEls[slotEls.length - 1]);
+  function buildMiniDish(seed) {
+    // Small SVG dish with 12 dots in a circular layout, deterministic per seed.
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 60 60');
+    svg.setAttribute('class', 'dish-mini');
+    // Rim
+    const rim = document.createElementNS(svgNS, 'circle');
+    rim.setAttribute('cx', '30'); rim.setAttribute('cy', '30'); rim.setAttribute('r', '22');
+    rim.setAttribute('fill', 'none'); rim.setAttribute('stroke', '#2a3142'); rim.setAttribute('stroke-width', '0.6');
+    rim.setAttribute('stroke-dasharray', '1.5 2');
+    svg.appendChild(rim);
+    // Dots
+    const N = 12;
+    const dots = [];
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2 + (seed * 0.31);
+      const r = 12 + ((seed * (i + 1)) % 7);
+      const cx = 30 + Math.cos(a) * r;
+      const cy = 30 + Math.sin(a) * r;
+      const dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('class', 'dot');
+      dot.setAttribute('cx', cx.toFixed(1));
+      dot.setAttribute('cy', cy.toFixed(1));
+      dot.setAttribute('r', '1.1');
+      dot.setAttribute('fill', '#c9a857');
+      dot.setAttribute('opacity', String(0.18 + ((seed * (i + 7)) % 10) / 30));
+      svg.appendChild(dot);
+      dots.push(dot);
+    }
+    return { svg, dots };
   }
 
-  function updateTopPick(entry) {
-    const { slot, topEl } = entry;
-    let topKey = 'mason', topVal = -1;
-    segOrder.forEach(k => {
-      if (slot.dist[k] > topVal) { topVal = slot.dist[k]; topKey = k; }
-    });
-    const nameMap = { mason: 'Mason', hunter: 'Hunter', banks: 'Banks', walker: 'Walker', field: 'field' };
-    topEl.textContent = `${nameMap[topKey]} · ${topVal}%`;
-  }
+  const scenarioCells = [];
+  scenarios.forEach((sc, idx) => {
+    const cell = document.createElement('div');
+    cell.className = 'scenario-cell';
+    cell.dataset.id = sc.id;
+    const dish = buildMiniDish(idx + 1);
+    cell.appendChild(dish.svg);
+    const q = document.createElement('div');
+    q.className = 'scenario-q';
+    q.textContent = sc.q;
+    cell.appendChild(q);
+    scenarioGrid.appendChild(cell);
+    scenarioCells.push({ cell, dots: dish.dots, sc });
+  });
 
-  slotData.forEach(renderDistRow);
+  // Each mini dish flickers asynchronously to look "alive" — different cadence per dish.
+  scenarioCells.forEach((entry, idx) => {
+    const tick = () => {
+      const k = Math.floor(Math.random() * entry.dots.length);
+      const d = entry.dots[k];
+      const orig = parseFloat(d.getAttribute('opacity')) || 0.3;
+      d.setAttribute('opacity', '0.95');
+      setTimeout(() => d.setAttribute('opacity', String(orig)), 400);
+    };
+    setInterval(tick, 700 + (idx * 230) % 1100);
+  });
 
-  function rebalanceDists(boostKey, magnitude) {
-    // Shift probability mass toward boostKey within each slot, drawing from others proportionally.
-    slotEls.forEach(entry => {
-      const d = entry.slot.dist;
-      const others = segOrder.filter(k => k !== boostKey);
-      const drawable = others.reduce((s, k) => s + d[k], 0);
-      if (drawable <= 0) return;
-      const shift = Math.min(magnitude, drawable * 0.4);
-      others.forEach(k => { d[k] = Math.max(0, d[k] - (d[k] / drawable) * shift); });
-      d[boostKey] = Math.min(95, d[boostKey] + shift);
-      // Round + renormalize to 100
-      let total = segOrder.reduce((s, k) => s + d[k], 0);
-      segOrder.forEach(k => { d[k] = Math.round(d[k] / total * 100); });
-      total = segOrder.reduce((s, k) => s + d[k], 0);
-      d.field += (100 - total);
-      // Apply to DOM via flex
-      segOrder.forEach(k => {
-        entry.segEls[k].style.flex = String(d[k]);
-        entry.segEls[k].title = k + ' ' + d[k] + '%';
-      });
-      updateTopPick(entry);
-    });
-  }
-
-  // === ANIMATION ENGINE ===
-  let eventCounter = 0;
-  let dialogueIdx = 0;
-  let tradeIdx = 0;
+  // === SCENARIO ROTATION ENGINE ===
+  let cascadeCounter = 0;
   let pulseIdx = 0;
-  let alertIdx = 0;
-  const dialogueFeed = document.getElementById('dialogue-feed');
-  const tradeFeed = document.getElementById('trade-feed');
-  const alertsContainer = document.getElementById('alerts');
+  let activeIdx = -1;
+  const insightList = document.getElementById('insight-list');
+  const riskList = document.getElementById('risk-list');
+  const dishBubbles = document.getElementById('dish-bubbles');
+  const activeDishId = document.getElementById('active-dish-id');
+  const activeDishQ = document.getElementById('active-dish-q');
   const statEvents = document.getElementById('stat-events');
   const panelEngine = document.getElementById('panel-engine');
   const demoEl = document.querySelector('.demo');
 
-  function spawnEvent() {
-    const ev = dialogueBank[dialogueIdx % dialogueBank.length];
-    dialogueIdx++;
-    eventCounter++;
-    statEvents.textContent = String(eventCounter).padStart(3, '—').slice(-3);
+  function activateScenario(idx) {
+    if (activeIdx >= 0) {
+      scenarioCells[activeIdx].cell.classList.remove('active');
+    }
+    activeIdx = idx;
+    const entry = scenarioCells[idx];
+    entry.cell.classList.add('active');
+    const sc = entry.sc;
 
-    // 1. Add dialogue bubble
-    const item = document.createElement('div');
-    item.className = 'dialogue-item ' + ev.tone;
-    item.innerHTML = `
-      <div class="dialogue-meta">
-        <span class="who">${ev.who}</span>
-        <span>${ev.room}</span>
+    // Update Panel II header
+    activeDishId.textContent = sc.id;
+    activeDishQ.textContent = sc.q;
+
+    // Wipe insights/risks, then re-populate (staggered)
+    fadeAndClear(insightList);
+    fadeAndClear(riskList);
+    sc.insights.forEach((ins, i) => {
+      setTimeout(() => addInsight(insightList, ins), 700 + i * 350);
+    });
+    sc.risks.forEach((rk, i) => {
+      setTimeout(() => addInsight(riskList, rk), 1200 + i * 350);
+    });
+
+    // Drive cascade — initial pulse, then dialogue bubbles surface in waves.
+    setTimeout(() => triggerCascade(sc), 250);
+    sc.dialogue.forEach((d, i) => {
+      setTimeout(() => surfaceBubble(d, i), 900 + i * 1500);
+    });
+  }
+
+  function fadeAndClear(container) {
+    Array.from(container.children).forEach(child => {
+      child.classList.add('fading');
+      setTimeout(() => child.remove(), 400);
+    });
+  }
+
+  function addInsight(container, item) {
+    const div = document.createElement('div');
+    div.className = 'insight-item';
+    div.innerHTML = `
+      <div class="insight-text">${item.text}</div>
+      <div class="insight-meta">
+        <span class="magnitude">${item.magnitude}</span>
+        <span>${item.conf}</span>
       </div>
-      <div class="dialogue-quote">${ev.q}</div>
     `;
-    dialogueFeed.insertBefore(item, dialogueFeed.firstChild);
-    while (dialogueFeed.children.length > 4) {
-      const last = dialogueFeed.lastElementChild;
-      last.classList.add('fading');
-      setTimeout(() => last.remove(), 500);
-      break;
-    }
-
-    // 2. Maybe spawn a trade row (every ~3rd event, or always on 'STRATEGY' rooms)
-    if (ev.room === 'STRATEGY' || ev.room === 'OVERRIDE' || dialogueIdx % 2 === 0) {
-      setTimeout(() => spawnTrade(), 700);
-    }
-
-    // 3. Particle from war-room → swarm
-    setTimeout(() => spawnParticle(ev, 1), 400);
-
-    // 4. Pulse swarm + react team clusters
-    setTimeout(() => {
-      pulseSwarm(ev.high);
-      flickerClusters(ev.high ? 14 : 8);
-    }, 1700);
-
-    // 5. Particle from swarm → distribution panel
-    setTimeout(() => spawnParticle(ev, 2), 2800);
-
-    // 6. Rebalance pick distributions + emit a signal
-    setTimeout(() => updateOutputs(ev), 3600);
+    container.appendChild(div);
   }
 
-  function spawnTrade() {
-    const t = tradeBank[tradeIdx % tradeBank.length];
-    tradeIdx++;
-    const row = document.createElement('div');
-    const cls = t.status === 'cold' ? 'cold' : (t.prob >= 60 ? 'gold' : '');
-    row.className = 'trade-row ' + cls;
-    row.innerHTML = `
-      <span class="trade-teams">${t.from} → ${t.to}</span>
-      <span class="trade-picks">${t.give} ⇄ ${t.get}</span>
-      <span class="trade-prob">${t.prob}%</span>
+  function triggerCascade(sc) {
+    cascadeCounter++;
+    statEvents.textContent = String(cascadeCounter).padStart(3, '—').slice(-3);
+    const isWide = sc.cascadeIntensity === 'wide';
+    const colorMap = { gold: '#c9a857', coral: '#e8654d', teal: '#7eb6b6' };
+    const color = colorMap[sc.cascadeColor] || '#c9a857';
+
+    // Multi-wave pulse rings synced to the dialogue cadence
+    pulseSwarmColored(color);
+    setTimeout(() => pulseSwarmColored(color), 1100);
+    setTimeout(() => pulseSwarmColored(color), 2200);
+
+    // Flicker many clusters for "wide" scenarios, fewer for "tight"
+    flickerClusters(isWide ? 22 : 9, color);
+    setTimeout(() => flickerClusters(isWide ? 18 : 7, color), 1300);
+    setTimeout(() => flickerClusters(isWide ? 14 : 5, color), 2600);
+  }
+
+  function surfaceBubble(d, i) {
+    // Bubbles appear at varied positions on the dish rim and float briefly.
+    const panelRect = panelEngine.getBoundingClientRect();
+    const positions = [
+      { left: '6%',  top: '32%' },
+      { left: '60%', top: '12%' },
+      { left: '4%',  top: '64%' },
+      { left: '58%', top: '70%' },
+    ];
+    const pos = positions[i % positions.length];
+    const bubble = document.createElement('div');
+    bubble.className = 'dish-bubble ' + d.tone;
+    bubble.style.left = pos.left;
+    bubble.style.top = pos.top;
+    bubble.innerHTML = `
+      <span class="who">${d.who}</span>
+      <span class="quote">${d.q}</span>
     `;
-    tradeFeed.insertBefore(row, tradeFeed.firstChild);
-    while (tradeFeed.children.length > 4) {
-      const last = tradeFeed.lastElementChild;
-      last.classList.add('fading');
-      setTimeout(() => last.remove(), 500);
-      break;
-    }
+    dishBubbles.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 4700);
   }
 
-  function spawnParticle(ev, segment) {
-    // segment 1: events panel → engine panel
-    // segment 2: engine panel → outputs panel
-    const p = document.createElement('div');
-    p.className = 'particle' + (ev.high ? ' high' : '') + (segment === 1 ? ' travel-1' : ' travel-2');
-
-    if (segment === 1) {
-      // Position over the events panel, traveling rightward into engine
-      const eventsPanel = document.getElementById('panel-events');
-      const rect = eventsPanel.getBoundingClientRect();
-      const demoRect = demoEl.getBoundingClientRect();
-      // Custom keyframes via inline styles for precise paths
-      const startX = rect.right - demoRect.left - 8;
-      const startY = rect.top - demoRect.top + 130 + Math.random() * 80;
-      const endX = startX + rect.width * 1.1;
-      const endY = startY + 30;
-      p.style.left = startX + 'px';
-      p.style.top = startY + 'px';
-      p.style.animation = 'none';
-      demoEl.appendChild(p);
-      // Animate via Web Animations API
-      p.animate([
-        { left: startX + 'px', top: startY + 'px', opacity: 0 },
-        { offset: 0.1, opacity: 1 },
-        { left: endX + 'px', top: endY + 'px', opacity: 1 }
-      ], { duration: 1300, easing: 'cubic-bezier(0.25, 0.1, 0.5, 1)', fill: 'forwards' });
-      setTimeout(() => p.remove(), 1500);
-    } else {
-      // Engine center → outputs panel
-      const outputsPanel = document.getElementById('panel-outputs');
-      const rect = outputsPanel.getBoundingClientRect();
-      const demoRect = demoEl.getBoundingClientRect();
-      const startX = rect.left - demoRect.left - rect.width * 1.1;
-      const startY = rect.top - demoRect.top + 200 + Math.random() * 80;
-      const endX = rect.left - demoRect.left + 24;
-      const endY = startY - 20 + Math.random() * 40;
-      p.style.left = startX + 'px';
-      p.style.top = startY + 'px';
-      p.style.animation = 'none';
-      demoEl.appendChild(p);
-      p.animate([
-        { left: startX + 'px', top: startY + 'px', opacity: 1 },
-        { left: endX + 'px', top: endY + 'px', opacity: 1 },
-        { offset: 1, opacity: 0 }
-      ], { duration: 1100, easing: 'cubic-bezier(0.5, 0, 0.75, 0.4)', fill: 'forwards' });
-      setTimeout(() => p.remove(), 1300);
-    }
-  }
-
-  function pulseSwarm(high) {
+  function pulseSwarmColored(color) {
     const ring = document.getElementById('pulse-' + ((pulseIdx % 3) + 1));
     pulseIdx++;
-    ring.setAttribute('stroke', high ? '#e8654d' : '#c9a857');
+    ring.setAttribute('stroke', color);
     ring.classList.remove('firing');
     void ring.getBoundingClientRect(); // force reflow
     ring.classList.add('firing');
   }
 
-  function flickerClusters(count) {
-    // Pick a subset of teams to react more strongly
+  function flickerClusters(count, color) {
+    color = color || '#c9a857';
     const indices = [];
     while (indices.length < count) {
       const i = Math.floor(Math.random() * teams);
@@ -1134,57 +1122,24 @@
         const glow = document.querySelector('.team-glow[data-idx="' + i + '"]');
         const center = document.querySelector('.team-center[data-idx="' + i + '"]');
         if (glow) {
-          glow.setAttribute('fill', 'url(#teamGlowHot)');
-          setTimeout(() => glow.setAttribute('fill', 'url(#teamGlow)'), 800);
+          glow.setAttribute('fill', color === '#e8654d' ? 'url(#teamGlowHot)' : 'url(#teamGlow)');
+          setTimeout(() => glow.setAttribute('fill', 'url(#teamGlow)'), 900);
         }
         if (center) {
           center.setAttribute('r', '4.2');
-          center.setAttribute('fill', '#e8654d');
+          center.setAttribute('fill', color);
           setTimeout(() => {
             center.setAttribute('r', '2.6');
             center.setAttribute('fill', '#c9a857');
-          }, 800);
+          }, 900);
         }
-      }, k * 60);
+      }, k * 55);
     });
-  }
-
-  function updateOutputs(ev) {
-    // Rebalance pick distributions toward the prospect this dialogue boosted.
-    if (ev.boost && segOrder.includes(ev.boost)) {
-      const magnitude = ev.high ? 7 : 3;
-      rebalanceDists(ev.boost, magnitude);
-    }
-    // Periodically spawn a signal
-    if (Math.random() < 0.6) {
-      spawnAlert();
-    }
-  }
-
-  function spawnAlert() {
-    const al = alertBank[alertIdx % alertBank.length];
-    alertIdx++;
-    const div = document.createElement('div');
-    div.className = 'alert' + (al.gold ? ' gold' : '');
-    div.innerHTML = `
-      <span class="alert-label">${al.label}</span>
-      <span class="alert-tag">${al.tag}</span>
-    `;
-    alertsContainer.insertBefore(div, alertsContainer.firstChild);
-    requestAnimationFrame(() => div.classList.add('visible'));
-
-    // Cap at 3
-    while (alertsContainer.children.length > 3) {
-      const last = alertsContainer.lastElementChild;
-      last.style.opacity = '0';
-      setTimeout(() => last.remove(), 400);
-      break;
-    }
   }
 
   // Subtle ambient agent flicker (always running)
   function ambientFlicker() {
-    const dots = document.querySelectorAll('.agent-dot');
+    const dots = document.querySelectorAll('#nodes .agent-dot');
     const idx = Math.floor(Math.random() * dots.length);
     const dot = dots[idx];
     if (dot) {
@@ -1196,10 +1151,13 @@
   setInterval(ambientFlicker, 180);
 
   // === START THE SHOW ===
-  // Stagger initial events for a quick onramp
-  setTimeout(() => spawnEvent(), 600);
-  setTimeout(() => spawnEvent(), 2400);
-  setInterval(() => spawnEvent(), 2400);
+  // Activate first scenario shortly after load, then rotate every ~9 seconds.
+  setTimeout(() => activateScenario(0), 700);
+  let rotIdx = 0;
+  setInterval(() => {
+    rotIdx = (rotIdx + 1) % scenarios.length;
+    activateScenario(rotIdx);
+  }, 9000);
 
 })();
 </script>
