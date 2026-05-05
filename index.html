@@ -820,20 +820,20 @@
 <section class="hero">
   <div class="container hero-grid">
     <div class="fade-in">
-      <div class="eyebrow">Swarm-Simulated Draft Intelligence</div>
+      <div class="eyebrow">Swarm-Simulated Draft Intelligence · Built on MiroFish</div>
       <h1 class="headline">
-        See the league's draft board form <em>before</em> the league knows it.
+        Every draft model gives you a number. <em>Shoal gives you the room.</em>
       </h1>
       <p class="subhead">
-        525 agents across 32 simulated war rooms, fed by every combine result, pro day, and visit. Watch consensus emerge — and find the seams where it doesn't.
+        Thirty-two GMs argue with their scouts. Agents posture. Owners override. Beat writers leak. Shoal simulates the whole negotiation — 525 named personas, ten thousand parallel boards, every prospect re-priced on every event.
       </p>
       <div class="cta-row">
-        <a href="#" class="btn btn-primary">
-          Request access
+        <a href="demo.html" class="btn btn-primary">
+          See the engine
           <span class="btn-arrow">→</span>
         </a>
-        <a href="#" class="btn btn-ghost">
-          See the method
+        <a href="#how" class="btn btn-ghost">
+          How it works
         </a>
       </div>
     </div>
@@ -939,11 +939,11 @@
   <div class="container ribbon-grid">
     <div class="ribbon-cell">
       <div class="ribbon-num">525<em>+</em></div>
-      <div class="ribbon-label">Simulated agents</div>
+      <div class="ribbon-label">Personas with memory</div>
     </div>
     <div class="ribbon-cell">
       <div class="ribbon-num">32</div>
-      <div class="ribbon-label">Team war rooms</div>
+      <div class="ribbon-label">War rooms · live debate</div>
     </div>
     <div class="ribbon-cell">
       <div class="ribbon-num">50<em>d</em></div>
@@ -951,7 +951,7 @@
     </div>
     <div class="ribbon-cell">
       <div class="ribbon-num">10<em>k</em></div>
-      <div class="ribbon-label">Parallel simulations / prospect</div>
+      <div class="ribbon-label">Parallel boards · per cascade</div>
     </div>
   </div>
 </section>
@@ -975,7 +975,7 @@
         <div class="cap-num">I — Divergence Matrix</div>
         <h3 class="cap-title">Find the prospects the league can't agree on.</h3>
         <p class="cap-body">
-          A 32-by-N heat map of how every team's simulated war room ranks every prospect, updated daily. The interesting cells aren't where consensus exists — they're the outliers, where one team has a guy thirty slots higher than the rest of the league. Those are the trade-up targets. Those are the picks that surprise on draft night.
+          Every war room runs its own argument. Persona memory means BUF's scheme bias shows up; KC's recency curve shows up; PHI's medical-conservatism shows up. The matrix surfaces the cells where one room is thirty slots out of step with the league. Those are the trade-up targets. Those are the picks that surprise on draft night — only because no one else simulated the room.
         </p>
         <div class="cap-viz">
           <div class="div-matrix">
@@ -1015,7 +1015,7 @@
         <div class="cap-num">II — Value Pockets</div>
         <h3 class="cap-title">Where the market is mispricing risk.</h3>
         <p class="cap-body">
-          Public consensus says one thing. The simulated league says another. The gap is the alpha.
+          Public consensus is a one-room model. The simulated league is thirty-two. When a prospect shows up in the swarm a round earlier than the consensus board, that's a pocket — and it's the one number aggregate sites can't compute, because it requires running the rooms.
         </p>
         <div class="cap-viz pocket-viz">
           <div class="pocket-row">
@@ -1041,7 +1041,7 @@
         <div class="cap-num">III — Trade-Up Telegraphy</div>
         <h3 class="cap-title">Predict the moves before they happen.</h3>
         <p class="cap-body">
-          When a high-conviction team sits behind a low-conviction one, the swarm flags a trade-up. Often weeks ahead.
+          GMs in the sim negotiate trades the way real GMs do — agent-to-agent, value chart in hand, owner pressure ticking. When a high-conviction team sits behind a soft one, you see the deal forming weeks early, with a probability that updates every time the room re-prices.
         </p>
         <div class="cap-viz tradeup-viz">
           <div class="tradeup-row">
@@ -1073,13 +1073,13 @@
   <div class="container">
     <div class="ticker-grid">
       <div>
-        <div class="section-eyebrow" style="margin-bottom: 16px;">— What the swarm sees right now</div>
-        <h2 class="section-title" style="margin-bottom: 28px;">Every result <em>perturbs</em><br>525 valuations.</h2>
+        <div class="section-eyebrow" style="margin-bottom: 16px;">— Cascades, not updates</div>
+        <h2 class="section-title" style="margin-bottom: 28px;">One event <em>perturbs</em><br>every persona that hears it.</h2>
         <p style="color: var(--ink-mute); font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 460px;">
-          A 4.32 forty doesn't just lift one prospect. It re-prices every receiver above and below him on every team's board, shifts positional scarcity at WR, and pulls draft capital toward and away from other positions.
+          A 4.32 forty doesn't just lift one prospect. It hits a beat writer; the beat writer hits Twitter; four GMs reweight; their position coaches push back; an agent leaks a counter; six boards mutate. Shoal models the cascade through every persona, not the headline.
         </p>
         <p style="color: var(--ink-mute); font-size: 16px; line-height: 1.65; max-width: 460px;">
-          Shoal watches the ripple. So you can read it in monospace.
+          You see the ripple in monospace, while it's still moving.
         </p>
       </div>
 
@@ -1152,17 +1152,22 @@
       </svg>
     </div>
 
-    <div class="agents-copy">
-      <div class="section-eyebrow" style="margin-bottom: 16px;">— The simulation, made visible</div>
-      <h3>An economy of <em>525 minds</em>, simulated daily.</h3>
+    <div class="agents-copy" id="how">
+      <div class="section-eyebrow" style="margin-bottom: 16px;">— Built on MiroFish · tuned for the draft</div>
+      <h3>The general-purpose swarm engine, <em>pointed at the room.</em></h3>
       <p class="drop-cap">
-        Each NFL front office has 15 to 20 distinct decision-makers — a GM, a director of college scouting, area scouts who actually watched the tape, position coaches with veto power, an analytics director, sometimes the owner. Shoal models all of them.
+        MiroFish is a multi-agent simulation engine that builds a parallel digital world from real-world signals, populates it with persona-driven agents, and lets the future rehearse itself. Shoal is the version that knows the NFL draft.
       </p>
-      <p>
-        Every agent has a scheme bias, a positional priority, a risk tolerance, a recency-bias coefficient, and a comp-set memory mined from the team's actual draft history. Information leaks between teams. Media synthesizes consensus. The market makes a line. The prospects perturb the field.
+      <p style="margin-top: 18px; color: var(--ink-mute); font-size: 14.5px; line-height: 1.7;">
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Persona generation</span> &nbsp;→&nbsp; 525 named decision-makers — GMs, area scouts, position coaches, analytics directors, owners, beat writers, certified agents — each with a scheme bias, recency curve, risk tolerance, and a comp-set memory mined from a decade of that team's actual picks.<br><br>
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">GraphRAG knowledge graph</span> &nbsp;→&nbsp; every prospect's tape, medical, character flags, scheme fit, agency, contract leverage; every team's needs, cap room, draft capital, prior trade partners, ownership patience.<br><br>
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Reality seed extraction</span> &nbsp;→&nbsp; continuous ingest of combine, pro days, top-30 visits, beat-writer leaks, mocks, market lines.<br><br>
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Parallel simulation</span> &nbsp;→&nbsp; ten thousand full first rounds run side-by-side — each one a different sequence of leaks, debates, owner overrides, and trade-ups.<br><br>
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Dynamic temporal memory</span> &nbsp;→&nbsp; boards mutate as picks land. When CHI takes Mason at one, twenty other rooms re-rank. Shoal watches the cascade.<br><br>
+        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Deep interaction</span> &nbsp;→&nbsp; ask any simulated GM why he passed. Ask the swarm what flips Walker into the top-five. The model talks back.
       </p>
-      <p style="color: var(--ink); margin-top: 24px;">
-        <span style="color: var(--gold); font-family: 'Fraunces', serif; font-style: italic;">A draft board doesn't form.</span> It emerges.
+      <p style="color: var(--ink); margin-top: 26px; font-size: 18px;">
+        <span style="color: var(--gold); font-family: 'Fraunces', serif; font-style: italic;">A draft board doesn't form.</span> It's negotiated. Shoal models the negotiation.
       </p>
     </div>
   </div>
@@ -1174,7 +1179,7 @@
     <div class="quote">
       <div class="quote-mark">"</div>
       <div class="quote-text">
-        Most platforms hand you <em>a number</em>. Shoal hands you the <em>variance</em> — and tells you which thirty-one rooms disagree about it.
+        Other platforms hand you a number. Shoal hands you the <em>argument that produced it</em> — the room, the leak, the owner override, the thirty-one boards that disagreed.
       </div>
       <div class="quote-attr">— Method note · v0.1</div>
     </div>
@@ -1187,12 +1192,12 @@
     <h2>The 2026 Combine starts <em>February 24.</em></h2>
     <p>Get access before the swarm goes live. Limited cohort for the first cycle.</p>
     <div class="cta-row" style="justify-content: center;">
-      <a href="#" class="btn btn-primary">
-        Request access
+      <a href="demo.html" class="btn btn-primary">
+        See the engine live
         <span class="btn-arrow">→</span>
       </a>
       <a href="#" class="btn btn-ghost">
-        Read the method paper
+        Request access
       </a>
     </div>
   </div>
