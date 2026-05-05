@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shoal × MiroFish — Engine Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1118;
+    --bg-warm: #11141c;
+    --surface: #161a25;
+    --surface-2: #1d2230;
+    --line: #2a3142;
+    --line-soft: #1f2433;
+    --ink: #ede4d3;
+    --ink-mute: #97a0b5;
+    --ink-dim: #5b6378;
+    --gold: #c9a857;
+    --gold-warm: #d9b86b;
+    --coral: #e8654d;
+    --teal: #7eb6b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Geist', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 25% 0%, rgba(201, 168, 87, 0.06), transparent 55%),
+      radial-gradient(ellipse at 75% 100%, rgba(232, 101, 77, 0.04), transparent 60%);
+    pointer-events: none;
+    z-index: 999;
+    mix-blend-mode: screen;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'tnum' 1; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
+
+  /* === Demo container === */
+  .demo {
+    width: 100%;
+    max-width: 1320px;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(180deg, #0e1118 0%, #0a0d14 100%);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 100px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(201, 168, 87, 0.05);
+  }
+
+  /* Top header strip */
+  .demo-header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(14, 17, 24, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 5;
+  }
+  .demo-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .demo-logo .mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .demo-logo .mark::before {
+    content: '◢';
+    color: var(--gold);
+    margin-right: 8px;
+    font-size: 12px;
+  }
+  .powered {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .powered .by {
+    color: var(--ink-dim);
+  }
+  .powered .mirofish {
+    color: var(--coral);
+    letter-spacing: 0.16em;
+    position: relative;
+  }
+  .powered .mirofish::before {
+    content: '◆';
+    margin-right: 6px;
+    color: var(--coral);
+    font-size: 8px;
+    position: relative;
+    top: -1px;
+  }
+
+  /* Loop indicator */
+  .loop-bar {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    height: 1px;
+    background: var(--gold);
+    width: 0;
+    z-index: 4;
+    box-shadow: 0 0 8px rgba(201, 168, 87, 0.5);
+    animation: loopBar 14s linear infinite;
+  }
+  @keyframes loopBar {
+    0%   { width: 0; }
+    100% { width: 100%; }
+  }
+
+  /* === Three-panel grid === */
+  .panels {
+    position: absolute;
+    top: 56px; bottom: 0; left: 0; right: 0;
+    display: grid;
+    grid-template-columns: 22% 1fr 30%;
+    gap: 0;
+  }
+
+  .panel {
+    position: relative;
+    padding: 24px 20px;
+    overflow: hidden;
+  }
+  .panel + .panel { border-left: 1px solid var(--line-soft); }
+
+  .panel-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-eyebrow .num {
+    color: var(--ink-dim);
+  }
+  .panel-title {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .panel-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.06em;
+    margin-bottom: 18px;
+  }
+
+  /* === Panel 1: Event Stream === */
+  .events-feed {
+    position: absolute;
+    top: 100px; left: 20px; right: 20px; bottom: 24px;
+    overflow: hidden;
+  }
+  .event-card {
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-left: 2px solid var(--gold);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-mute);
+    opacity: 0;
+    transform: translateY(-12px);
+    animation: eventIn 0.5s ease-out forwards;
+    position: relative;
+  }
+  .event-card.high {
+    border-left-color: var(--coral);
+  }
+  .event-card .event-time {
+    color: var(--ink-dim);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .event-card .event-body {
+    color: var(--ink);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .event-card .event-tag {
+    display: inline-block;
+    background: rgba(201, 168, 87, 0.15);
+    color: var(--gold);
+    padding: 2px 6px;
+    margin-right: 6px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .event-card.high .event-tag {
+    background: rgba(232, 101, 77, 0.18);
+    color: var(--coral);
+  }
+  @keyframes eventIn {
+    0%   { opacity: 0; transform: translateY(-12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .event-card.fading {
+    animation: eventOut 0.6s ease-in forwards;
+  }
+  @keyframes eventOut {
+    0%   { opacity: 1; }
+    100% { opacity: 0; transform: translateY(8px); }
+  }
+
+  /* === Panel 2: Swarm Engine === */
+  .engine-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .engine-meta {
+    position: absolute;
+    bottom: 24px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    z-index: 3;
+  }
+  .engine-meta .stat-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .engine-meta .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+    font-style: italic;
+    font-weight: 500;
+    font-variation-settings: 'opsz' 144;
+    letter-spacing: -0.01em;
+  }
+
+  /* SVG agent styling */
+  .team-glow {
+    transition: opacity 400ms ease;
+  }
+  .agent-dot {
+    transition: opacity 200ms ease;
+  }
+  .team-center {
+    transition: r 300ms ease, fill 300ms ease;
+  }
+  .pulse-ring {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 1.5;
+    opacity: 0;
+    transform-origin: center;
+  }
+  .pulse-ring.firing {
+    animation: pulseRing 1.6s ease-out forwards;
+  }
+  @keyframes pulseRing {
+    0%   { opacity: 0.7; r: 4; stroke-width: 2; }
+    100% { opacity: 0; r: 220; stroke-width: 0.3; }
+  }
+
+  /* === Panel 3: Outputs === */
+  .outputs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 100px;
+    height: 100%;
+  }
+  .output-block {
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    padding: 12px 14px;
+    border-radius: 2px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .output-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .output-label .live {
+    color: var(--coral);
+  }
+  .output-label .live::before {
+    content: '●';
+    margin-right: 4px;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  .mini-river {
+    width: 100%;
+    flex: 1;
+    min-height: 80px;
+  }
+
+  /* Divergence matrix */
+  .div-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .div-mini-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .div-mini-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .div-mini-cells {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    gap: 1px;
+    height: 11px;
+  }
+  .div-mini-cell {
+    background: #22293a;
+    transition: background 600ms ease;
+  }
+
+  /* Alerts */
+  .alerts-block {
+    flex: 0.6;
+  }
+  .alert {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: rgba(232, 101, 77, 0.05);
+    border-left: 2px solid var(--coral);
+    color: var(--ink-mute);
+    opacity: 0;
+    transform: translateX(8px);
+    transition: all 400ms ease;
+  }
+  .alert.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .alert.gold {
+    background: rgba(201, 168, 87, 0.05);
+    border-left-color: var(--gold);
+  }
+  .alert .alert-label {
+    color: var(--ink);
+  }
+  .alert .alert-tag {
+    color: var(--coral);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  .alert.gold .alert-tag {
+    color: var(--gold);
+  }
+
+  /* === Pipes between panels === */
+  .pipe {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .pipe-1 { left: 22%; }
+  .pipe-2 { left: 70%; }
+
+  .particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold), 0 0 16px rgba(201, 168, 87, 0.5);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .particle.high {
+    background: var(--coral);
+    box-shadow: 0 0 8px var(--coral), 0 0 16px rgba(232, 101, 77, 0.5);
+  }
+
+  /* Particle traveling along pipe */
+  .particle.travel-1 { animation: travel1 1.4s ease-in forwards; }
+  .particle.travel-2 { animation: travel2 1.2s ease-out forwards; }
+
+  @keyframes travel1 {
+    0%   { left: 0%; top: 30%; opacity: 0; }
+    8%   { opacity: 1; }
+    100% { left: 100%; top: 50%; opacity: 1; }
+  }
+  @keyframes travel2 {
+    0%   { left: 0%; top: 50%; opacity: 1; }
+    92%  { opacity: 1; }
+    100% { left: 100%; top: 40%; opacity: 0; }
+  }
+
+  /* Bottom legend strip */
+  .legend-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 32px;
+    border-top: 1px solid var(--line-soft);
+    background: rgba(14, 17, 24, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    z-index: 6;
+  }
+  .legend-arrow {
+    color: var(--gold);
+    margin: 0 12px;
+  }
+  .legend-flow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Caption beneath the graphic */
+  .caption {
+    position: absolute;
+    bottom: -48px;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    body { padding: 16px; }
+    .demo { aspect-ratio: 4 / 5; }
+    .panels { grid-template-columns: 1fr; grid-template-rows: 1fr 1.4fr 1fr; }
+    .panel + .panel { border-left: none; border-top: 1px solid var(--line-soft); }
+    .pipe { display: none; }
+    .outputs { padding-top: 60px; }
+    .events-feed { top: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="demo">
+
+  <!-- Header -->
+  <div class="demo-header">
+    <div class="demo-logo">
+      <span class="mark">SHOAL</span>
+      <span class="mono" style="font-size: 9px; letter-spacing: 0.18em; color: var(--ink-dim); text-transform: uppercase;">Engine Demo · v0.1</span>
+    </div>
+    <div class="powered">
+      <span class="by">Powered by</span>
+      <span class="mirofish">MiroFish</span>
+    </div>
+  </div>
+
+  <div class="loop-bar"></div>
+
+  <!-- Three panels -->
+  <div class="panels">
+
+    <!-- Panel 1: Events -->
+    <div class="panel" id="panel-events">
+      <div class="panel-eyebrow"><span class="num">I</span><span>Events</span></div>
+      <div class="panel-title">Inputs from the field.</div>
+      <div class="panel-sub">Combine · pro days · visits · leaks</div>
+      <div class="events-feed" id="events-feed"></div>
+    </div>
+
+    <!-- Panel 2: Swarm Engine -->
+    <div class="panel" id="panel-engine">
+      <div class="panel-eyebrow" style="position: relative; z-index: 4;"><span class="num">II</span><span>MiroFish Swarm</span></div>
+      <div class="panel-title" style="position: relative; z-index: 4;">525 minds, simulated.</div>
+      <div class="panel-sub" style="position: relative; z-index: 4;">32 war rooms · media · market · 10k parallel sims</div>
+
+      <svg class="engine-svg" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="teamGlow">
+            <stop offset="0%" stop-color="#c9a857" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#c9a857" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="teamGlowHot">
+            <stop offset="0%" stop-color="#e8654d" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#e8654d" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="mediaGlow">
+            <stop offset="0%" stop-color="#e8654d" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#e8654d" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Pulse rings (will be triggered) -->
+        <circle id="pulse-1" class="pulse-ring" cx="300" cy="280" r="0"/>
+        <circle id="pulse-2" class="pulse-ring" cx="300" cy="280" r="0"/>
+        <circle id="pulse-3" class="pulse-ring" cx="300" cy="280" r="0"/>
+
+        <!-- Edge lines -->
+        <g id="edges" stroke="#2a3142" stroke-width="0.5" opacity="0.4" fill="none"></g>
+
+        <!-- Team and agent nodes -->
+        <g id="nodes"></g>
+
+        <!-- Center: media/market -->
+        <circle cx="300" cy="280" r="44" fill="url(#mediaGlow)"/>
+        <circle cx="300" cy="280" r="12" fill="#1d2230" stroke="#e8654d" stroke-width="1.4"/>
+        <text x="300" y="284" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#e8654d" letter-spacing="0.18em">MEDIA</text>
+      </svg>
+
+      <div class="engine-meta">
+        <div class="stat-cell">
+          <span class="stat-num" id="stat-agents">525</span>
+          <span>Agents active</span>
+        </div>
+        <div class="stat-cell" style="text-align: center;">
+          <span class="stat-num" id="stat-events">— —</span>
+          <span>Events processed</span>
+        </div>
+        <div class="stat-cell" style="text-align: right;">
+          <span class="stat-num" id="stat-sims">10k</span>
+          <span>Parallel sims</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Outputs -->
+    <div class="panel" id="panel-outputs">
+      <div class="panel-eyebrow"><span class="num">III</span><span>Emergence</span></div>
+      <div class="panel-title">What the swarm reveals.</div>
+      <div class="panel-sub">Live valuations · divergence · signals</div>
+
+      <div class="outputs">
+        <!-- Mini river plot -->
+        <div class="output-block">
+          <div class="output-label">
+            <span>Projected slot · Mason J.</span>
+            <span class="live">LIVE</span>
+          </div>
+          <svg class="mini-river" viewBox="0 0 280 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c9a857" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#c9a857" stop-opacity="0.05"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid -->
+            <line x1="0" y1="30" x2="280" y2="30" stroke="#1f2433" stroke-width="0.5"/>
+            <line x1="0" y1="60" x2="280" y2="60" stroke="#1f2433" stroke-width="0.5"/>
+            <line x1="0" y1="90" x2="280" y2="90" stroke="#1f2433" stroke-width="0.5"/>
+            <!-- Confidence band -->
+            <path d="M 0,50 C 60,45 110,40 160,55 C 210,68 250,72 280,60 L 280,80 C 250,92 210,90 160,82 C 110,72 60,75 0,80 Z" fill="url(#bandGrad)"/>
+            <!-- Trajectories container -->
+            <g id="river-trajectories" stroke-width="0.7" fill="none"></g>
+            <!-- Median -->
+            <path d="M 0,60 C 60,55 110,50 160,65 C 210,76 250,80 280,68"
+                  stroke="#ede4d3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Divergence matrix -->
+        <div class="output-block">
+          <div class="output-label">
+            <span>Divergence — top contested</span>
+            <span class="mono" style="color: var(--ink-dim);">32T</span>
+          </div>
+          <div class="div-mini" id="div-mini">
+            <div class="div-mini-row">
+              <span class="div-mini-name">Hunter, T.</span>
+              <div class="div-mini-cells" id="dm-row-0"></div>
+            </div>
+            <div class="div-mini-row">
+              <span class="div-mini-name">Mason, J.</span>
+              <div class="div-mini-cells" id="dm-row-1"></div>
+            </div>
+            <div class="div-mini-row">
+              <span class="div-mini-name">Banks, K.</span>
+              <div class="div-mini-cells" id="dm-row-2"></div>
+            </div>
+            <div class="div-mini-row">
+              <span class="div-mini-name">Walker, M.</span>
+              <div class="div-mini-cells" id="dm-row-3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="output-block alerts-block">
+          <div class="output-label">
+            <span>Signals</span>
+            <span class="live">LIVE</span>
+          </div>
+          <div id="alerts"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pipes (purely conceptual; particles travel through panel containers) -->
+  <div id="pipe-1" class="pipe pipe-1"></div>
+  <div id="pipe-2" class="pipe pipe-2"></div>
+
+  <!-- Bottom legend -->
+  <div class="legend-strip">
+    <span class="legend-flow">
+      <span style="color: var(--ink);">Events</span>
+      <span class="legend-arrow">→</span>
+      <span style="color: var(--ink);">Swarm</span>
+      <span class="legend-arrow">→</span>
+      <span style="color: var(--ink);">Emergence</span>
+    </span>
+    <span style="color: var(--ink-dim);">14s loop · live mode</span>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // === DATA: realistic combine event vocabulary ===
+  const eventBank = [
+    { tag: 'FORTY',   body: 'Mason, J. — 4.34s',          high: true,  outputBoost: 'mason' },
+    { tag: 'VERT',    body: 'Banks, K. — 41.5"',          high: false, outputBoost: 'banks' },
+    { tag: 'BENCH',   body: 'Walker, M. — 27 reps',       high: false, outputBoost: 'walker' },
+    { tag: 'PRO DAY', body: 'Hunter, T. — confirmed 4.31', high: true, outputBoost: 'hunter' },
+    { tag: 'TOP-30',  body: 'NYJ ↔ J. Mason',             high: false, outputBoost: 'mason' },
+    { tag: 'MEDICAL', body: 'Walker, M. — re-cleared',    high: true,  outputBoost: 'walker' },
+    { tag: 'SHUTTLE', body: 'Hunter, T. — 3.96s',         high: false, outputBoost: 'hunter' },
+    { tag: 'BROAD',   body: 'Banks, K. — 11\'2"',         high: false, outputBoost: 'banks' },
+    { tag: 'LEAK',    body: 'PHI war room — Hunter rising', high: true, outputBoost: 'hunter' },
+    { tag: 'MOCK',    body: 'DJ #4 — Mason top-15',       high: false, outputBoost: 'mason' },
+    { tag: 'INTW',    body: 'Walker, M. — strong board',  high: false, outputBoost: 'walker' },
+    { tag: 'FORTY',   body: 'Banks, K. — 4.42s',          high: false, outputBoost: 'banks' },
+  ];
+
+  const alertBank = [
+    { tag: 'VALUE POCKET', label: 'Banks K. · Δ +18 slots', gold: true },
+    { tag: 'TRADE-UP',     label: 'PHI #16 → #9 · 78%',     gold: false },
+    { tag: 'DIVERGENCE',   label: 'Hunter T. · variance +47%', gold: false },
+    { tag: 'CONSENSUS',    label: 'Mason J. · top-12 lock',  gold: true },
+    { tag: 'TRADE-UP',     label: 'SF #11 → #5 · 64%',       gold: false },
+    { tag: 'VALUE POCKET', label: 'Walker M. · Δ +12 slots', gold: true },
+  ];
+
+  // === BUILD: swarm graph ===
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const nodesG = document.getElementById('nodes');
+  const edgesG = document.getElementById('edges');
+  const cx = 300, cy = 280;
+  const teams = 32;
+  const teamRadius = 175;
+  const agentsPerTeam = 5;
+  const teamCenters = [];
+
+  for (let t = 0; t < teams; t++) {
+    const angle = (t / teams) * Math.PI * 2 - Math.PI / 2;
+    const tx = cx + Math.cos(angle) * teamRadius;
+    const ty = cy + Math.sin(angle) * teamRadius;
+    teamCenters.push({ x: tx, y: ty, idx: t });
+
+    // Glow
+    const glow = document.createElementNS(svgNS, 'circle');
+    glow.setAttribute('cx', tx);
+    glow.setAttribute('cy', ty);
+    glow.setAttribute('r', 18);
+    glow.setAttribute('fill', 'url(#teamGlow)');
+    glow.setAttribute('class', 'team-glow');
+    glow.dataset.idx = t;
+    nodesG.appendChild(glow);
+
+    // Team center
+    const c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('cx', tx);
+    c.setAttribute('cy', ty);
+    c.setAttribute('r', 2.6);
+    c.setAttribute('fill', '#c9a857');
+    c.setAttribute('opacity', '0.85');
+    c.setAttribute('class', 'team-center');
+    c.dataset.idx = t;
+    nodesG.appendChild(c);
+
+    // Agent dots
+    for (let a = 0; a < agentsPerTeam; a++) {
+      const aAngle = (a / agentsPerTeam) * Math.PI * 2 + Math.random() * 0.6;
+      const aDist = 5 + Math.random() * 7;
+      const ax = tx + Math.cos(aAngle) * aDist;
+      const ay = ty + Math.sin(aAngle) * aDist;
+      const dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('cx', ax);
+      dot.setAttribute('cy', ay);
+      dot.setAttribute('r', 1);
+      dot.setAttribute('fill', '#ede4d3');
+      dot.setAttribute('opacity', String(0.35 + Math.random() * 0.3));
+      dot.setAttribute('class', 'agent-dot');
+      nodesG.appendChild(dot);
+    }
+
+    // Edge to media center
+    const edge = document.createElementNS(svgNS, 'line');
+    edge.setAttribute('x1', tx);
+    edge.setAttribute('y1', ty);
+    edge.setAttribute('x2', cx);
+    edge.setAttribute('y2', cy);
+    edge.setAttribute('stroke', '#2a3142');
+    edge.setAttribute('stroke-width', '0.4');
+    edge.setAttribute('opacity', '0.35');
+    edgesG.appendChild(edge);
+  }
+
+  // Inter-team leakage edges
+  for (let i = 0; i < 22; i++) {
+    const a = Math.floor(Math.random() * teams);
+    let b = Math.floor(Math.random() * teams);
+    while (b === a) b = Math.floor(Math.random() * teams);
+    const edge = document.createElementNS(svgNS, 'line');
+    edge.setAttribute('x1', teamCenters[a].x);
+    edge.setAttribute('y1', teamCenters[a].y);
+    edge.setAttribute('x2', teamCenters[b].x);
+    edge.setAttribute('y2', teamCenters[b].y);
+    edge.setAttribute('stroke', '#c9a857');
+    edge.setAttribute('stroke-width', '0.3');
+    edge.setAttribute('opacity', '0.16');
+    edgesG.appendChild(edge);
+  }
+
+  // === Initial divergence matrix fill ===
+  function shadeForValue(v) {
+    if (v < 0.15) return '#e8654d';
+    if (v < 0.35) return '#d9b86b';
+    if (v < 0.55) return '#9a7e3f';
+    if (v < 0.75) return '#3d4658';
+    return '#22293a';
+  }
+  const dmRows = [];
+  for (let r = 0; r < 4; r++) {
+    const row = document.getElementById('dm-row-' + r);
+    const cells = [];
+    for (let i = 0; i < 32; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'div-mini-cell';
+      cell.style.background = shadeForValue(0.4 + (Math.random() - 0.5) * 0.5);
+      row.appendChild(cell);
+      cells.push(cell);
+    }
+    dmRows.push(cells);
+  }
+
+  // === Initial river plot trajectories ===
+  const riverG = document.getElementById('river-trajectories');
+  function smoothPath(pts) {
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cx1 = prev.x + (curr.x - prev.x) * 0.5;
+      const cy1 = prev.y;
+      const cx2 = prev.x + (curr.x - prev.x) * 0.5;
+      const cy2 = curr.y;
+      d += ` C ${cx1},${cy1} ${cx2},${cy2} ${curr.x},${curr.y}`;
+    }
+    return d;
+  }
+  function genTrajectory() {
+    const anchors = [
+      { x: 0,   y: 60 },
+      { x: 60,  y: 50 + (Math.random() - 0.5) * 18 },
+      { x: 110, y: 50 + (Math.random() - 0.5) * 22 },
+      { x: 160, y: 65 + (Math.random() - 0.5) * 28 },
+      { x: 210, y: 75 + (Math.random() - 0.5) * 24 },
+      { x: 280, y: 68 + (Math.random() - 0.5) * 22 },
+    ];
+    return smoothPath(anchors);
+  }
+  for (let i = 0; i < 14; i++) {
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', genTrajectory());
+    path.setAttribute('stroke', i % 6 === 0 ? '#e8654d' : '#c9a857');
+    path.setAttribute('opacity', i % 6 === 0 ? '0.4' : '0.18');
+    path.setAttribute('stroke-width', '0.6');
+    path.setAttribute('fill', 'none');
+    riverG.appendChild(path);
+  }
+
+  // === ANIMATION ENGINE ===
+  let eventCounter = 0;
+  let pulseIdx = 0;
+  let alertIdx = 0;
+  const eventsFeed = document.getElementById('events-feed');
+  const alertsContainer = document.getElementById('alerts');
+  const statEvents = document.getElementById('stat-events');
+  const panelEngine = document.getElementById('panel-engine');
+  const demoEl = document.querySelector('.demo');
+
+  function nowTimeStr() {
+    const base = new Date();
+    base.setHours(14);
+    base.setMinutes(20 + Math.floor(eventCounter * 0.7));
+    base.setSeconds(Math.floor(Math.random() * 60));
+    return base.toTimeString().slice(0, 8);
+  }
+
+  function spawnEvent() {
+    const ev = eventBank[eventCounter % eventBank.length];
+    eventCounter++;
+    statEvents.textContent = String(eventCounter).padStart(3, '—').slice(-3);
+
+    // 1. Add event card to feed
+    const card = document.createElement('div');
+    card.className = 'event-card' + (ev.high ? ' high' : '');
+    card.innerHTML = `
+      <div class="event-time">${nowTimeStr()}</div>
+      <div class="event-body">
+        <span class="event-tag">${ev.tag}</span>
+        ${ev.body}
+      </div>
+    `;
+    eventsFeed.insertBefore(card, eventsFeed.firstChild);
+
+    // Keep feed length manageable
+    while (eventsFeed.children.length > 5) {
+      const last = eventsFeed.lastElementChild;
+      last.classList.add('fading');
+      setTimeout(() => last.remove(), 600);
+      break;
+    }
+
+    // 2. Particle from events → swarm
+    setTimeout(() => spawnParticle(ev, 1), 400);
+
+    // 3. Pulse swarm + react team clusters
+    setTimeout(() => {
+      pulseSwarm(ev.high);
+      flickerClusters(ev.high ? 14 : 8);
+    }, 1700);
+
+    // 4. Particle from swarm → outputs
+    setTimeout(() => spawnParticle(ev, 2), 2800);
+
+    // 5. Update outputs
+    setTimeout(() => updateOutputs(ev), 4000);
+  }
+
+  function spawnParticle(ev, segment) {
+    // segment 1: events panel → engine panel
+    // segment 2: engine panel → outputs panel
+    const p = document.createElement('div');
+    p.className = 'particle' + (ev.high ? ' high' : '') + (segment === 1 ? ' travel-1' : ' travel-2');
+
+    if (segment === 1) {
+      // Position over the events panel, traveling rightward into engine
+      const eventsPanel = document.getElementById('panel-events');
+      const rect = eventsPanel.getBoundingClientRect();
+      const demoRect = demoEl.getBoundingClientRect();
+      // Custom keyframes via inline styles for precise paths
+      const startX = rect.right - demoRect.left - 8;
+      const startY = rect.top - demoRect.top + 130 + Math.random() * 80;
+      const endX = startX + rect.width * 1.1;
+      const endY = startY + 30;
+      p.style.left = startX + 'px';
+      p.style.top = startY + 'px';
+      p.style.animation = 'none';
+      demoEl.appendChild(p);
+      // Animate via Web Animations API
+      p.animate([
+        { left: startX + 'px', top: startY + 'px', opacity: 0 },
+        { offset: 0.1, opacity: 1 },
+        { left: endX + 'px', top: endY + 'px', opacity: 1 }
+      ], { duration: 1300, easing: 'cubic-bezier(0.25, 0.1, 0.5, 1)', fill: 'forwards' });
+      setTimeout(() => p.remove(), 1500);
+    } else {
+      // Engine center → outputs panel
+      const outputsPanel = document.getElementById('panel-outputs');
+      const rect = outputsPanel.getBoundingClientRect();
+      const demoRect = demoEl.getBoundingClientRect();
+      const startX = rect.left - demoRect.left - rect.width * 1.1;
+      const startY = rect.top - demoRect.top + 200 + Math.random() * 80;
+      const endX = rect.left - demoRect.left + 24;
+      const endY = startY - 20 + Math.random() * 40;
+      p.style.left = startX + 'px';
+      p.style.top = startY + 'px';
+      p.style.animation = 'none';
+      demoEl.appendChild(p);
+      p.animate([
+        { left: startX + 'px', top: startY + 'px', opacity: 1 },
+        { left: endX + 'px', top: endY + 'px', opacity: 1 },
+        { offset: 1, opacity: 0 }
+      ], { duration: 1100, easing: 'cubic-bezier(0.5, 0, 0.75, 0.4)', fill: 'forwards' });
+      setTimeout(() => p.remove(), 1300);
+    }
+  }
+
+  function pulseSwarm(high) {
+    const ring = document.getElementById('pulse-' + ((pulseIdx % 3) + 1));
+    pulseIdx++;
+    ring.setAttribute('stroke', high ? '#e8654d' : '#c9a857');
+    ring.classList.remove('firing');
+    void ring.getBoundingClientRect(); // force reflow
+    ring.classList.add('firing');
+  }
+
+  function flickerClusters(count) {
+    // Pick a subset of teams to react more strongly
+    const indices = [];
+    while (indices.length < count) {
+      const i = Math.floor(Math.random() * teams);
+      if (!indices.includes(i)) indices.push(i);
+    }
+    indices.forEach((i, k) => {
+      setTimeout(() => {
+        const glow = document.querySelector('.team-glow[data-idx="' + i + '"]');
+        const center = document.querySelector('.team-center[data-idx="' + i + '"]');
+        if (glow) {
+          glow.setAttribute('fill', 'url(#teamGlowHot)');
+          setTimeout(() => glow.setAttribute('fill', 'url(#teamGlow)'), 800);
+        }
+        if (center) {
+          center.setAttribute('r', '4.2');
+          center.setAttribute('fill', '#e8654d');
+          setTimeout(() => {
+            center.setAttribute('r', '2.6');
+            center.setAttribute('fill', '#c9a857');
+          }, 800);
+        }
+      }, k * 60);
+    });
+  }
+
+  function updateOutputs(ev) {
+    // 1. Update divergence matrix — pick a row, recolor a few cells
+    const rowMap = { hunter: 0, mason: 1, banks: 2, walker: 3 };
+    const rowIdx = rowMap[ev.outputBoost] !== undefined ? rowMap[ev.outputBoost] : Math.floor(Math.random() * 4);
+    const cells = dmRows[rowIdx];
+    // Recolor ~10 random cells
+    for (let i = 0; i < 10; i++) {
+      const idx = Math.floor(Math.random() * 32);
+      const v = ev.high ? Math.random() * 0.6 : 0.3 + Math.random() * 0.5;
+      cells[idx].style.background = shadeForValue(v);
+    }
+
+    // 2. Add a new river trajectory + remove oldest
+    const newPath = document.createElementNS(svgNS, 'path');
+    newPath.setAttribute('d', genTrajectory());
+    newPath.setAttribute('stroke', ev.high ? '#e8654d' : '#c9a857');
+    newPath.setAttribute('opacity', '0');
+    newPath.setAttribute('stroke-width', '0.6');
+    newPath.setAttribute('fill', 'none');
+    riverG.appendChild(newPath);
+    newPath.animate([
+      { opacity: 0 },
+      { opacity: ev.high ? 0.4 : 0.22 }
+    ], { duration: 600, fill: 'forwards' });
+
+    if (riverG.children.length > 16) {
+      const oldest = riverG.firstElementChild;
+      oldest.animate([{ opacity: parseFloat(oldest.getAttribute('opacity')) || 0.2 }, { opacity: 0 }],
+                     { duration: 400, fill: 'forwards' });
+      setTimeout(() => oldest.remove(), 450);
+    }
+
+    // 3. Spawn an alert occasionally
+    if (Math.random() < 0.55) {
+      spawnAlert();
+    }
+  }
+
+  function spawnAlert() {
+    const al = alertBank[alertIdx % alertBank.length];
+    alertIdx++;
+    const div = document.createElement('div');
+    div.className = 'alert' + (al.gold ? ' gold' : '');
+    div.innerHTML = `
+      <span class="alert-label">${al.label}</span>
+      <span class="alert-tag">${al.tag}</span>
+    `;
+    alertsContainer.insertBefore(div, alertsContainer.firstChild);
+    requestAnimationFrame(() => div.classList.add('visible'));
+
+    // Cap at 3
+    while (alertsContainer.children.length > 3) {
+      const last = alertsContainer.lastElementChild;
+      last.style.opacity = '0';
+      setTimeout(() => last.remove(), 400);
+      break;
+    }
+  }
+
+  // Subtle ambient agent flicker (always running)
+  function ambientFlicker() {
+    const dots = document.querySelectorAll('.agent-dot');
+    const idx = Math.floor(Math.random() * dots.length);
+    const dot = dots[idx];
+    if (dot) {
+      const orig = dot.getAttribute('opacity');
+      dot.setAttribute('opacity', '0.95');
+      setTimeout(() => dot.setAttribute('opacity', orig), 200);
+    }
+  }
+  setInterval(ambientFlicker, 180);
+
+  // === START THE SHOW ===
+  // Stagger initial events for a quick onramp
+  setTimeout(() => spawnEvent(), 600);
+  setTimeout(() => spawnEvent(), 2400);
+  setInterval(() => spawnEvent(), 2400);
+
+})();
+</script>
+
+</body>
+</html>
