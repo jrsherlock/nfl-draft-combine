@@ -1,1400 +1,3686 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRO — Swarm-simulated draft intelligence</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DRO — Behavioral Simulation for Player Personnel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+  /* ============================================================
+     WAR ROOM SANDBOX — single-file mockup
+     Aesthetic: ink-and-ember tactical terminal × editorial sports
+     ============================================================ */
+
   :root {
-    --bg: #0e1118;
-    --bg-warm: #11141c;
-    --surface: #161a25;
-    --surface-2: #1d2230;
-    --line: #2a3142;
-    --line-soft: #1f2433;
-    --ink: #ede4d3;
-    --ink-mute: #97a0b5;
-    --ink-dim: #5b6378;
-    --gold: #c9a857;
-    --gold-warm: #d9b86b;
-    --coral: #e8654d;
-    --teal: #7eb6b6;
-    --crimson: #b3473a;
+    --ink:        #0A0B0F;
+    --ink-2:      #11131A;
+    --ink-3:      #181B25;
+    --ink-4:      #20242F;
+    --line:       #2A2E3C;
+    --line-2:     #383D4D;
+    --paper:      #F2EBDD;
+    --paper-2:    #D9D2C2;
+    --mute:       #8A8E9C;
+    --mute-2:     #5C606F;
+    --ember:      #FF5B14;
+    --ember-2:    #FF8A4C;
+    --ember-deep: #B33C09;
+    --mint:       #7DF9C9;
+    --mint-deep:  #3FA67B;
+    --gold:       #D4B254;
+    --crimson:    #E63946;
+    --azure:      #5DADE2;
+
+    --serif: "Fraunces", "Instrument Serif", Georgia, serif;
+    --sans:  "Geist", system-ui, sans-serif;
+    --mono:  "JetBrains Mono", ui-monospace, monospace;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Geist', sans-serif;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
     font-weight: 400;
+    line-height: 1.45;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 18% -10%, rgba(255,91,20,0.08), transparent 45%),
+      radial-gradient(circle at 92% 8%, rgba(125,249,201,0.05), transparent 35%),
+      linear-gradient(180deg, #0A0B0F 0%, #0A0B0F 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* Subtle warmth overlay — pure CSS, no data URIs */
+  /* film grain overlay */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 25% 0%, rgba(201, 168, 87, 0.06), transparent 55%),
-      radial-gradient(ellipse at 75% 100%, rgba(232, 101, 77, 0.04), transparent 60%);
-    pointer-events: none;
-    z-index: 999;
-    mix-blend-mode: screen;
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 999;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+    mix-blend-mode: overlay;
   }
 
-  .serif { font-family: 'Fraunces', serif; font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0; }
-  .serif-italic { font-family: 'Fraunces', serif; font-style: italic; font-variation-settings: 'opsz' 144, 'SOFT' 30; }
-  .mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'tnum' 1; }
+  /* faint engineering grid */
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
 
-  .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  /* ===================== UTILITIES ===================== */
+  .mono   { font-family: var(--mono); font-feature-settings: "tnum"; }
+  .serif  { font-family: var(--serif); }
+  .uc     { text-transform: uppercase; letter-spacing: 0.14em; }
+  .uc-tight { text-transform: uppercase; letter-spacing: 0.06em; }
+  .num    { font-variant-numeric: tabular-nums; }
+  .em     { color: var(--ember); }
+  .mt     { color: var(--mint); }
+  .gd     { color: var(--gold); }
+  .mu     { color: var(--mute); }
 
-  /* === Top bar === */
+  .pulse {
+    display: inline-block; width: 8px; height: 8px;
+    background: var(--ember); border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(255,91,20,0.7);
+    animation: pulse 1.6s infinite;
+    vertical-align: middle;
+  }
+  .pulse.mt { background: var(--mint); box-shadow: 0 0 0 0 rgba(125,249,201,0.7); animation-name: pulseMint; }
+  .pulse.gd { background: var(--gold); box-shadow: 0 0 0 0 rgba(212,178,84,0.7); animation-name: pulseGold; }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,91,20,0.7); }
+    70%  { box-shadow: 0 0 0 14px rgba(255,91,20,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,91,20,0); }
+  }
+  @keyframes pulseMint {
+    0%   { box-shadow: 0 0 0 0 rgba(125,249,201,0.7); }
+    70%  { box-shadow: 0 0 0 14px rgba(125,249,201,0); }
+    100% { box-shadow: 0 0 0 0 rgba(125,249,201,0); }
+  }
+  @keyframes pulseGold {
+    0%   { box-shadow: 0 0 0 0 rgba(212,178,84,0.7); }
+    70%  { box-shadow: 0 0 0 14px rgba(212,178,84,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,178,84,0); }
+  }
+
+  /* ===================== TOP BAR ===================== */
   .topbar {
-    border-bottom: 1px solid var(--line-soft);
-    background: rgba(14, 17, 24, 0.85);
+    position: relative; z-index: 5;
+    border-bottom: 1px solid var(--line);
+    background: rgba(10,11,15,0.82);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
   }
-  .topbar-inner {
-    display: flex;
+  .topbar-row {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 0;
     align-items: center;
-    justify-content: space-between;
-    height: 64px;
+    height: 56px;
+    padding: 0 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--mute);
   }
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--paper);
+    letter-spacing: 0.2em;
+    font-weight: 500;
   }
-  .logo-mark {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 24px;
-    letter-spacing: 0.04em;
+  .brand-mark {
+    width: 22px; height: 22px;
+    background:
+      conic-gradient(from 220deg at 50% 50%, var(--ember) 0 25%, var(--ink) 25% 50%, var(--mint) 50% 75%, var(--ink) 75% 100%);
+    border: 1px solid var(--paper);
+    border-radius: 1px;
+  }
+  .topbar-status {
+    display: flex; align-items: center; justify-content: center;
+    gap: 28px;
+  }
+  .topbar-status span b { color: var(--paper); font-weight: 500; }
+  .topbar-end { display: flex; justify-content: flex-end; align-items: center; gap: 18px; }
+
+  /* scrolling ticker */
+  .ticker {
+    position: relative; z-index: 4;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background: var(--ink-2);
+    height: 32px;
+    display: flex; align-items: center;
+  }
+  .ticker-label {
+    flex: 0 0 auto;
+    background: var(--ember);
     color: var(--ink);
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-  }
-  .logo-mark::before {
-    content: '◢';
-    color: var(--gold);
-    margin-right: 8px;
-    font-size: 14px;
-    position: relative;
-    top: -2px;
-  }
-  .logo-suffix {
-    font-family: 'JetBrains Mono', monospace;
+    height: 100%;
+    display: flex; align-items: center;
+    padding: 0 14px;
+    font-family: var(--mono);
     font-size: 10px;
     letter-spacing: 0.18em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
+    font-weight: 700;
   }
-  .nav {
-    display: flex;
-    gap: 36px;
-    align-items: center;
+  .ticker-track {
+    display: flex; gap: 48px;
+    white-space: nowrap;
+    animation: ticker 90s linear infinite;
+    padding-left: 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--paper-2);
   }
-  .nav a {
-    color: var(--ink-mute);
-    text-decoration: none;
-    font-size: 13px;
-    letter-spacing: 0.02em;
-    transition: color 150ms ease;
-  }
-  .nav a:hover { color: var(--ink); }
-  .nav-cta {
-    border: 1px solid var(--gold);
-    color: var(--gold) !important;
-    padding: 8px 18px;
-    border-radius: 1px;
-    font-size: 12px !important;
-    letter-spacing: 0.08em !important;
-    text-transform: uppercase;
-    font-weight: 500;
-    transition: all 150ms ease;
-  }
-  .nav-cta:hover { background: var(--gold); color: var(--bg) !important; }
-
-  /* Live indicator */
-  .live-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    color: var(--coral);
-    text-transform: uppercase;
-  }
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--coral);
-    box-shadow: 0 0 0 0 rgba(232, 101, 77, 0.7);
-    animation: pulse 1.8s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(232, 101, 77, 0.6); }
-    70% { box-shadow: 0 0 0 8px rgba(232, 101, 77, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(232, 101, 77, 0); }
+  .ticker-track span b { color: var(--ember); font-weight: 500; }
+  .ticker-track span i { color: var(--mint); font-style: normal; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
   }
 
-  /* === Hero === */
+  /* ===================== HERO ===================== */
   .hero {
-    padding: 96px 0 80px;
-    border-bottom: 1px solid var(--line-soft);
-    position: relative;
+    position: relative; z-index: 2;
+    padding: 96px 28px 64px;
+    max-width: 1620px;
+    margin: 0 auto;
   }
   .hero-grid {
     display: grid;
-    grid-template-columns: 1.05fr 1.4fr;
-    gap: 64px;
-    align-items: center;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 72px;
+    align-items: end;
   }
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
+  .hero-eyebrow {
+    font-family: var(--mono);
     font-size: 11px;
-    letter-spacing: 0.22em;
-    color: var(--gold);
-    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--ember);
     margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 14px;
   }
-  .eyebrow::before {
-    content: '';
-    width: 28px;
-    height: 1px;
-    background: var(--gold);
-    display: inline-block;
+  .hero-eyebrow::before {
+    content: ""; width: 36px; height: 1px; background: var(--ember);
   }
-  .headline {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 0;
-    font-weight: 400;
-    font-size: clamp(42px, 5.2vw, 76px);
-    line-height: 0.98;
-    letter-spacing: -0.022em;
-    color: var(--ink);
-    margin-bottom: 32px;
-  }
-  .headline em {
-    font-style: italic;
-    color: var(--gold);
-    font-weight: 300;
-    font-variation-settings: 'opsz' 144, 'SOFT' 100;
-  }
-  .subhead {
-    font-size: 17px;
-    line-height: 1.55;
-    color: var(--ink-mute);
-    max-width: 460px;
-    margin-bottom: 44px;
-  }
-  .cta-row {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 26px;
-    text-decoration: none;
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-weight: 500;
-    border-radius: 1px;
-    transition: all 200ms ease;
-    cursor: pointer;
-    border: none;
-    font-family: 'Geist', sans-serif;
-  }
-  .btn-primary {
-    background: var(--gold);
-    color: var(--bg);
-  }
-  .btn-primary:hover {
-    background: var(--gold-warm);
-    transform: translateY(-1px);
-  }
-  .btn-ghost {
-    background: transparent;
-    color: var(--ink);
-    border: 1px solid var(--line);
-  }
-  .btn-ghost:hover { border-color: var(--ink-mute); }
-  .btn-arrow {
-    font-size: 16px;
-    transition: transform 200ms ease;
-  }
-  .btn-primary:hover .btn-arrow { transform: translateX(3px); }
 
-  /* River plot card */
-  .river-card {
-    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-warm) 100%);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 28px 28px 22px;
-    position: relative;
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(56px, 8vw, 124px);
+    line-height: 0.92;
+    letter-spacing: -0.025em;
+    color: var(--paper);
+    font-variation-settings: "opsz" 144, "SOFT" 30;
   }
-  .river-card::before {
-    content: '';
-    position: absolute;
-    top: -1px; left: -1px; right: -1px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0.6;
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ember);
+    font-variation-settings: "opsz" 144, "SOFT" 100;
   }
-  .river-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 18px;
-  }
-  .river-title {
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--ink);
-    font-variation-settings: 'opsz' 144;
-  }
-  .river-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-  .river-stat {
-    text-align: right;
-  }
-  .river-stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
-  }
-  .river-stat-value {
-    font-family: 'Fraunces', serif;
-    font-size: 24px;
-    font-weight: 500;
-    color: var(--coral);
-    margin-top: 2px;
-    font-variation-settings: 'opsz' 144;
-  }
-  .river-svg {
-    width: 100%;
-    height: auto;
+  .hero h1 .small {
     display: block;
-  }
-  .river-footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--ink-dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .river-legend {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line-soft);
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: var(--ink-mute);
-  }
-  .legend-swatch {
-    width: 14px;
-    height: 2px;
-  }
-
-  /* === Stat ribbon === */
-  .ribbon {
-    background: var(--bg-warm);
-    border-top: 1px solid var(--line-soft);
-    border-bottom: 1px solid var(--line-soft);
-    padding: 28px 0;
-  }
-  .ribbon-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
-  }
-  .ribbon-cell {
-    border-left: 1px solid var(--line-soft);
-    padding-left: 24px;
-  }
-  .ribbon-cell:first-child { border-left: none; padding-left: 0; }
-  .ribbon-num {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-    font-size: 38px;
-    font-weight: 400;
-    color: var(--ink);
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .ribbon-num em {
-    font-style: italic;
-    color: var(--gold);
+    font-size: 0.42em;
     font-weight: 300;
-  }
-  .ribbon-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
-    margin-top: 10px;
-  }
-
-  /* === Section header === */
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 56px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--line-soft);
-  }
-  .section-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    text-transform: uppercase;
-  }
-  .section-title {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-    font-size: clamp(36px, 4vw, 56px);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-    margin-top: 8px;
-    max-width: 720px;
-  }
-  .section-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-  .section-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-dim);
-    letter-spacing: 0.1em;
-    text-align: right;
-  }
-
-  /* === Capability tiles (asymmetric grid) === */
-  .capabilities {
-    padding: 96px 0;
-  }
-  .cap-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 24px;
-  }
-  .cap-tile {
-    background: var(--surface);
-    border: 1px solid var(--line-soft);
-    padding: 36px;
-    position: relative;
-    transition: border-color 200ms ease;
-    overflow: hidden;
-  }
-  .cap-tile:hover { border-color: var(--line); }
-  .cap-tile.large {
-    grid-row: span 2;
-    display: flex;
-    flex-direction: column;
-  }
-  .cap-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
-  .cap-title {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144;
-    font-size: 30px;
-    font-weight: 500;
-    line-height: 1.1;
+    color: var(--paper-2);
+    margin-top: 18px;
     letter-spacing: -0.01em;
-    margin-bottom: 14px;
-    color: var(--ink);
   }
-  .cap-tile.large .cap-title { font-size: 42px; }
-  .cap-body {
-    color: var(--ink-mute);
+
+  .hero-meta {
+    border-left: 1px solid var(--line-2);
+    padding-left: 32px;
+    color: var(--paper-2);
     font-size: 15px;
     line-height: 1.6;
-    margin-bottom: 28px;
-    max-width: 480px;
+    max-width: 460px;
   }
-  .cap-tile.large .cap-body { font-size: 16px; max-width: 540px; }
-  .cap-viz {
-    margin-top: auto;
-  }
-
-  /* Divergence matrix viz */
-  .div-matrix {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 16px;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .div-matrix-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-mute);
-    letter-spacing: 0.05em;
-  }
-  .div-cells {
-    display: grid;
-    grid-template-columns: repeat(32, 1fr);
-    gap: 2px;
-    height: 18px;
-  }
-  .div-cell {
-    height: 100%;
-    border-radius: 1px;
-  }
-
-  /* Trade-up viz */
-  .tradeup-viz {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-  }
-  .tradeup-row {
-    display: grid;
-    grid-template-columns: 60px 1fr 60px;
-    align-items: center;
-    gap: 12px;
-    color: var(--ink-mute);
-  }
-  .tradeup-bar {
-    height: 4px;
-    background: var(--line);
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-  }
-  .tradeup-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: var(--gold);
-  }
-  .tradeup-arrow {
-    color: var(--gold);
-    font-size: 14px;
-  }
-
-  /* Value pocket viz */
-  .pocket-viz {
-    background: var(--bg-warm);
-    border: 1px solid var(--line-soft);
-    padding: 18px;
-    border-radius: 2px;
-  }
-  .pocket-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--line-soft);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-  }
-  .pocket-row:last-child { border-bottom: none; }
-  .pocket-name {
-    color: var(--ink);
-    font-family: 'Fraunces', serif;
-    font-size: 14px;
+  .hero-meta p + p { margin-top: 18px; }
+  .hero-meta b { color: var(--paper); font-weight: 500; }
+  .hero-meta .pull {
+    font-family: var(--serif);
     font-style: italic;
-  }
-  .pocket-spread {
-    color: var(--coral);
-    letter-spacing: 0.05em;
-  }
-  .pocket-confidence {
-    color: var(--ink-dim);
-  }
-
-  /* === Live ticker === */
-  .ticker-section {
-    padding: 96px 0;
-    border-top: 1px solid var(--line-soft);
-    background: var(--bg-warm);
-  }
-  .ticker-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 80px;
-    align-items: start;
-  }
-  .ticker-stream {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .ticker-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
+    font-size: 19px;
+    color: var(--paper);
+    line-height: 1.4;
     border-bottom: 1px solid var(--line);
-    background: var(--bg-warm);
-  }
-  .ticker-head-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    color: var(--ink);
-    text-transform: uppercase;
-  }
-  .ticker-feed {
-    padding: 8px 0;
-    max-height: 380px;
-    overflow: hidden;
-    position: relative;
-  }
-  .ticker-row {
-    display: grid;
-    grid-template-columns: 70px 1fr;
-    gap: 16px;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--line-soft);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--ink-mute);
-  }
-  .ticker-row:last-child { border-bottom: none; }
-  .ticker-time {
-    color: var(--ink-dim);
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    padding-top: 2px;
-  }
-  .ticker-event {
-    color: var(--ink);
-  }
-  .ticker-event .delta {
-    color: var(--coral);
-    font-weight: 600;
-  }
-  .ticker-event .delta-pos {
-    color: var(--teal);
-    font-weight: 600;
-  }
-  .ticker-event .player {
-    color: var(--gold);
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-size: 13px;
-    font-weight: 500;
+    padding-bottom: 22px;
+    margin-bottom: 22px;
   }
 
-  /* === Agent network section === */
-  .agents-section {
-    padding: 96px 0;
-    border-top: 1px solid var(--line-soft);
-  }
-  .agents-grid {
+  /* scenario picker pill row */
+  .scenario {
+    margin-top: 56px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 80px;
+    grid-template-columns: 200px 1fr auto;
     align-items: center;
+    gap: 24px;
   }
-  .agents-svg {
-    width: 100%;
-    height: auto;
-    display: block;
+  .scenario-label {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.2em; color: var(--mute);
   }
-  .agents-copy h3 {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-    font-size: 44px;
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    margin-bottom: 28px;
+  .scenario-label b { color: var(--paper); font-weight: 500; display: block; margin-top: 4px; font-size: 13px; letter-spacing: 0.06em; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border: 1px solid var(--line-2);
+    color: var(--paper-2);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+  }
+  .pill.active {
+    background: var(--paper);
     color: var(--ink);
+    border-color: var(--paper);
   }
-  .agents-copy h3 em {
-    font-style: italic;
-    color: var(--gold);
+  .pill.live {
+    border-color: var(--ember);
+    color: var(--ember);
   }
-  .agents-copy p {
-    color: var(--ink-mute);
-    font-size: 16px;
-    line-height: 1.65;
-    margin-bottom: 18px;
-    max-width: 480px;
+  .pill.live::before {
+    content: ""; display: inline-block;
+    width: 6px; height: 6px; background: var(--ember);
+    border-radius: 50%; margin-right: 8px;
+    vertical-align: 1px;
+    animation: pulse 1.6s infinite;
   }
-  .agents-copy p:last-child { margin-bottom: 0; }
-  .drop-cap::first-letter {
-    font-family: 'Fraunces', serif;
-    float: left;
-    font-size: 64px;
-    line-height: 0.85;
-    padding: 6px 12px 0 0;
-    color: var(--gold);
-    font-weight: 500;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  .scenario-cta {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--mute); letter-spacing: 0.16em;
   }
+  .scenario-cta b { color: var(--mint); font-weight: 500; }
 
-  /* === Pull quote === */
-  .quote-section {
-    padding: 96px 0;
-    border-top: 1px solid var(--line-soft);
-    background: var(--bg-warm);
+  /* ===================== SECTION SHELL ===================== */
+  .section { position: relative; z-index: 2; max-width: 1620px; margin: 0 auto; padding: 56px 28px; }
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    border-bottom: 1px solid var(--line-2);
+    padding-bottom: 22px; margin-bottom: 28px;
+    gap: 24px;
   }
-  .quote {
-    max-width: 920px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  .quote-mark {
-    font-family: 'Fraunces', serif;
-    font-size: 96px;
-    line-height: 0.5;
-    color: var(--gold);
-    margin-bottom: 24px;
-    font-style: italic;
-    font-weight: 300;
-  }
-  .quote-text {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-    font-style: italic;
+  .section-head h2 {
+    font-family: var(--serif);
     font-weight: 300;
     font-size: clamp(28px, 3.4vw, 44px);
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-    margin-bottom: 32px;
+    letter-spacing: -0.015em;
+    line-height: 1;
   }
-  .quote-text em {
-    font-style: normal;
-    color: var(--gold);
-    font-weight: 400;
+  .section-head h2 em { font-style: italic; color: var(--ember); font-weight: 400; }
+  .section-head .index {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--mute); letter-spacing: 0.22em;
+    margin-bottom: 10px; display: block;
   }
-  .quote-attr {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: var(--ink-dim);
-    text-transform: uppercase;
+  .section-head .meta {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--mute); letter-spacing: 0.16em;
+    text-align: right; line-height: 1.7;
+  }
+  .section-head .meta b { color: var(--paper); font-weight: 500; }
+
+  /* ===================== COMMAND DECK ===================== */
+  .deck {
+    display: grid;
+    grid-template-columns: 320px 1fr 360px;
+    gap: 16px;
+    align-items: stretch;
   }
 
-  /* === Footer CTA === */
-  .footer-cta {
-    padding: 120px 0;
-    text-align: center;
-    border-top: 1px solid var(--line-soft);
+  .panel {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    position: relative;
+    display: flex; flex-direction: column;
   }
-  .footer-cta h2 {
-    font-family: 'Fraunces', serif;
-    font-variation-settings: 'opsz' 144, 'SOFT' 30;
-    font-size: clamp(40px, 4.8vw, 64px);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    margin-bottom: 20px;
-    color: var(--ink);
-  }
-  .footer-cta h2 em {
-    font-style: italic;
-    color: var(--gold);
-  }
-  .footer-cta p {
-    color: var(--ink-mute);
-    font-size: 17px;
-    max-width: 520px;
-    margin: 0 auto 40px;
-  }
-
-  /* Bottom footer */
-  .footer {
-    border-top: 1px solid var(--line-soft);
-    padding: 40px 0;
-    background: var(--bg-warm);
-  }
-  .footer-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--ink-dim);
-    font-family: 'JetBrains Mono', monospace;
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
     font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper-2);
+  }
+  .panel-head .tag {
+    color: var(--mute); font-size: 9px; letter-spacing: 0.18em;
+  }
+  .panel-body { padding: 18px 16px; flex: 1; }
+
+  /* ----- LEFT: Variable Injection Lab ----- */
+  .injector .panel-body { padding: 0; }
+  .injector h3 {
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    font-size: 22px; letter-spacing: -0.01em;
+    padding: 22px 18px 10px; color: var(--paper);
+  }
+  .injector h3 + p {
+    padding: 0 18px 22px; color: var(--mute);
+    font-size: 12.5px; line-height: 1.55;
+    border-bottom: 1px dashed var(--line);
+  }
+  .inj-row {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 14px;
+    align-items: center;
+  }
+  .inj-row .label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--paper);
+  }
+  .inj-row .label small {
+    display: block; text-transform: none; letter-spacing: 0;
+    color: var(--mute); font-family: var(--sans); font-size: 11px;
+    margin-top: 2px;
+  }
+  .inj-toggle {
+    width: 36px; height: 20px; border-radius: 999px;
+    background: var(--ink-4); position: relative;
+    border: 1px solid var(--line-2);
+  }
+  .inj-toggle.on { background: var(--ember); border-color: var(--ember); }
+  .inj-toggle::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; background: var(--paper); border-radius: 50%;
+    transition: 0.2s;
+  }
+  .inj-toggle.on::after { left: 18px; background: var(--ink); }
+
+  .inj-slider {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center; gap: 14px;
+  }
+  .slider-track {
+    position: relative; height: 4px; background: var(--ink-4);
+    border-radius: 2px;
+  }
+  .slider-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--ember); border-radius: 2px; }
+  .slider-knob {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 12px; height: 12px; background: var(--paper); border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(255,91,20,0.18);
+  }
+  .slider-val {
+    font-family: var(--mono); font-size: 11px; color: var(--ember);
+    min-width: 60px; text-align: right;
+  }
+
+  .inj-foot {
+    padding: 16px 18px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,91,20,0.05) 0 8px, transparent 8px 16px),
+      var(--ink-2);
+    border-top: 1px solid var(--line);
+  }
+  .inj-foot .btn {
+    display: block; width: 100%;
+    background: var(--ember); color: var(--ink);
+    border: none; padding: 14px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 700; cursor: pointer;
+    border-radius: 1px;
+  }
+  .inj-foot .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); margin-top: 10px;
+    letter-spacing: 0.12em; text-align: center;
+  }
+
+  /* ----- CENTER: Live War Room ----- */
+  .warroom { background: var(--ink-2); border: 1px solid var(--line); }
+  .wr-head {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(90deg, rgba(255,91,20,0.06), transparent 60%);
+  }
+  .wr-head h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: 24px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .wr-head h3 .pulse { transform: translateY(-2px); }
+  .wr-clock {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 28px; color: var(--ember);
+    letter-spacing: 0.04em;
+    margin: 0 28px;
+    text-shadow: 0 0 12px rgba(255,91,20,0.4);
+  }
+  .wr-clock small {
+    display: block; font-size: 9px; letter-spacing: 0.2em;
+    color: var(--mute); margin-top: -2px; text-transform: uppercase;
+  }
+  .wr-pickbar {
+    text-align: right; font-family: var(--mono); font-size: 11px;
+    color: var(--mute); letter-spacing: 0.14em;
+  }
+  .wr-pickbar b { color: var(--paper); font-weight: 500; font-size: 12px; }
+
+  /* on-the-clock card */
+  .on-clock {
+    padding: 24px 22px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 32px;
+    background:
+      radial-gradient(circle at 0% 100%, rgba(255,91,20,0.07), transparent 50%);
+  }
+  .oc-team {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 14px;
+  }
+  .oc-helmet {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #002A5C 40%, #C8102E 40%);
+    border: 2px solid var(--paper);
+    flex: 0 0 auto;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .oc-helmet::after {
+    content: ""; position: absolute; top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 2px; height: 6px; background: var(--paper);
+    box-shadow: 0 6px 0 var(--paper), 0 12px 0 var(--paper);
+  }
+  .oc-team .meta { flex: 1; }
+  .oc-team .pick {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    color: var(--ember);
+  }
+  .oc-team .name {
+    font-family: var(--serif); font-size: 28px;
+    letter-spacing: -0.01em; line-height: 1.05;
+    margin-top: 2px;
+  }
+  .oc-team .record {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--mute); margin-top: 4px; letter-spacing: 0.08em;
+  }
+  .oc-needs {
+    display: flex; gap: 6px;
+    margin-top: 10px;
+  }
+  .need-tag {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+    padding: 3px 8px; border: 1px solid var(--line-2);
+    color: var(--paper-2); border-radius: 1px;
+  }
+  .need-tag.hot { background: var(--ember); color: var(--ink); border-color: var(--ember); }
+
+  .oc-deliberation {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    font-family: var(--mono); font-size: 11.5px;
+    line-height: 1.7;
+    color: var(--paper-2);
+    border-left: 3px solid var(--mint);
+    border-radius: 1px;
+    position: relative;
+  }
+  .oc-deliberation::before {
+    content: "MIROFISH AGENT // GM_DELIBERATION_STREAM";
+    position: absolute; top: -10px; left: 14px;
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--mint); background: var(--ink-2); padding: 2px 8px;
+  }
+  .oc-deliberation b { color: var(--mint); font-weight: 500; }
+  .oc-deliberation .typing::after {
+    content: "▎"; color: var(--mint);
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .oc-prospect {
+    background:
+      linear-gradient(180deg, var(--ink-3), var(--ink-2));
+    border: 1px solid var(--line);
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative;
+  }
+  .oc-prospect::before {
+    content: "PROJECTED SELECTION"; position: absolute;
+    top: -9px; left: 16px; font-family: var(--mono);
+    font-size: 9px; letter-spacing: 0.2em; color: var(--ember);
+    background: var(--ink-2); padding: 2px 8px;
+  }
+  .ocp-name {
+    font-family: var(--serif); font-size: 26px;
+    line-height: 1; margin-top: 6px; letter-spacing: -0.01em;
+  }
+  .ocp-meta {
+    font-family: var(--mono); font-size: 11px; color: var(--mute);
+    letter-spacing: 0.1em;
+  }
+  .ocp-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-top: 4px;
+  }
+  .stat-cell { text-align: left; }
+  .stat-cell .v {
+    font-family: var(--mono); font-weight: 500;
+    font-size: 18px; color: var(--paper);
+  }
+  .stat-cell .v small { color: var(--mute); font-size: 10px; font-weight: 400; }
+  .stat-cell .l {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    color: var(--mute); margin-top: 2px; text-transform: uppercase;
+  }
+
+  .ocp-grade {
+    display: flex; align-items: center; gap: 14px;
+    border-top: 1px dashed var(--line); padding-top: 12px;
+  }
+  .grade-pill {
+    background: var(--mint); color: var(--ink);
+    font-family: var(--mono); font-weight: 700;
+    padding: 4px 10px; font-size: 13px; letter-spacing: 0.1em;
+  }
+  .grade-meta { font-family: var(--mono); font-size: 11px; color: var(--paper-2); letter-spacing: 0.08em; }
+  .grade-meta b { color: var(--mint); font-weight: 500; }
+
+  /* draft order list */
+  .pick-list {
+    border-top: 1px solid var(--line);
+  }
+  .pick-row {
+    display: grid;
+    grid-template-columns: 56px 32px 1fr 80px 90px 90px;
+    align-items: center;
+    padding: 11px 22px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px;
+    transition: 0.15s;
+  }
+  .pick-row:hover { background: rgba(255,255,255,0.025); }
+  .pick-row.taken {
+    color: var(--mute);
+    background: rgba(255,255,255,0.012);
+  }
+  .pick-row.taken .pick-team-name { color: var(--paper-2); }
+  .pick-row.live {
+    background: linear-gradient(90deg, rgba(255,91,20,0.12), transparent);
+    color: var(--paper);
+  }
+  .pick-row.live .pick-num { color: var(--ember); }
+  .pick-num {
+    font-weight: 700; font-size: 14px; letter-spacing: 0.05em;
+  }
+  .pick-helmet {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--paper-2);
+  }
+  .pick-team {
+    display: flex; flex-direction: column; line-height: 1.2;
+  }
+  .pick-team-name { font-weight: 500; color: var(--paper); letter-spacing: 0.06em; }
+  .pick-team-record { color: var(--mute); font-size: 10px; letter-spacing: 0.1em; margin-top: 1px; }
+  .pick-pos { color: var(--mute); letter-spacing: 0.14em; }
+  .pick-status {
+    text-align: right; font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .pick-status.trade { color: var(--gold); }
+  .pick-status.lock  { color: var(--mint); }
+  .pick-status.alert { color: var(--ember); }
+  .pick-prob {
+    text-align: right; font-size: 11px;
+    color: var(--paper-2);
+  }
+  .pick-prob small { color: var(--mute); font-size: 9px; letter-spacing: 0.12em; }
+
+  /* trade alert ribbon */
+  .trade-alert {
+    background: linear-gradient(90deg, var(--gold), #B6963F);
+    color: var(--ink);
+    padding: 10px 22px;
+    font-family: var(--mono); font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .trade-alert b { font-weight: 700; }
+  .trade-alert .right { margin-left: auto; }
+
+  /* ----- RIGHT: GM Agent Roster ----- */
+  .agents { background: var(--ink-2); border: 1px solid var(--line); }
+  .agent-card {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .agent-card:last-child { border-bottom: none; }
+  .agent-card.active { background: rgba(125,249,201,0.04); }
+
+  .ag-avatar {
+    width: 44px; height: 44px;
+    border-radius: 1px;
+    background: var(--ink-3);
+    border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 18px; font-weight: 500;
+    color: var(--paper);
+    position: relative;
+  }
+  .ag-avatar::after {
+    content: ""; position: absolute; bottom: -2px; right: -2px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--mute-2); border: 2px solid var(--ink-2);
+  }
+  .agent-card.active .ag-avatar::after { background: var(--mint); }
+  .agent-card.alert .ag-avatar::after { background: var(--ember); animation: pulse 1.6s infinite; }
+
+  .ag-meta { min-width: 0; }
+  .ag-name {
+    font-family: var(--serif); font-size: 16px;
+    letter-spacing: -0.005em; line-height: 1.1;
+  }
+  .ag-name small {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.14em;
+    display: block; margin-top: 2px; text-transform: uppercase;
+  }
+  .ag-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .ag-tag {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--paper-2);
+    padding: 2px 6px; border: 1px solid var(--line-2);
   }
 
-  /* Subtle entrance animation */
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+  .ag-bars { margin-top: 12px; display: grid; gap: 6px; }
+  .ag-bar {
+    display: grid; grid-template-columns: 60px 1fr 24px;
+    gap: 8px; align-items: center;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em;
   }
-  .fade-in {
-    opacity: 0;
-    animation: fade-up 800ms ease-out forwards;
+  .ag-bar .l { color: var(--mute); text-transform: uppercase; }
+  .ag-bar .v { text-align: right; color: var(--paper); }
+  .ag-bar .t {
+    height: 4px; background: var(--ink-4);
+    position: relative; border-radius: 1px;
   }
-  .delay-1 { animation-delay: 100ms; }
-  .delay-2 { animation-delay: 250ms; }
-  .delay-3 { animation-delay: 400ms; }
-  .delay-4 { animation-delay: 550ms; }
+  .ag-bar .t span {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: var(--paper-2);
+  }
+  .ag-bar.risk .t span { background: var(--ember); }
+  .ag-bar.bpa  .t span { background: var(--mint); }
+  .ag-bar.trade .t span { background: var(--gold); }
 
-  /* Responsive */
-  @media (max-width: 900px) {
-    .hero-grid, .ticker-grid, .agents-grid { grid-template-columns: 1fr; gap: 48px; }
-    .cap-grid { grid-template-columns: 1fr; }
-    .cap-tile.large { grid-row: auto; }
-    .ribbon-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    .ribbon-cell { border-left: none; padding-left: 0; }
-    .nav { display: none; }
+  .ag-status {
+    margin-top: 10px;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--paper-2); line-height: 1.5;
+    border-left: 2px solid var(--line-2);
+    padding-left: 8px;
+  }
+  .agent-card.active .ag-status { border-left-color: var(--mint); }
+  .agent-card.alert .ag-status { border-left-color: var(--ember); }
+  .ag-status .em { color: var(--ember); }
+  .ag-status .mt { color: var(--mint); }
+  .ag-status .gd { color: var(--gold); }
+
+  /* ===================== PROSPECT DEEP DIVE ===================== */
+  .deep {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 22px;
+  }
+
+  .prospect-hero {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .ph-top { display: flex; gap: 18px; align-items: flex-start; }
+  .ph-portrait {
+    width: 110px; height: 140px;
+    background:
+      linear-gradient(180deg, #2C1A0A 0%, #4A2A0F 60%, #1A1006 100%);
+    border: 1px solid var(--line-2);
+    position: relative; overflow: hidden;
+    flex: 0 0 auto;
+  }
+  .ph-portrait::before {
+    content: "";
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80%; height: 65%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,200,150,0.55), transparent 60%);
+  }
+  .ph-portrait::after {
+    content: "76";
+    position: absolute; top: 8px; left: 8px;
+    font-family: var(--mono); font-size: 28px;
+    font-weight: 700; color: rgba(255,255,255,0.18);
+    letter-spacing: -0.04em;
+  }
+  .ph-info { flex: 1; }
+  .ph-info .num {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ember); letter-spacing: 0.18em;
+  }
+  .ph-info h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: 38px; line-height: 0.95;
+    letter-spacing: -0.02em; margin-top: 6px;
+  }
+  .ph-info h3 em { font-style: italic; color: var(--gold); }
+  .ph-info .tagline {
+    font-family: var(--serif); font-style: italic;
+    font-size: 14.5px; color: var(--paper-2);
+    margin-top: 8px;
+  }
+  .ph-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; margin-top: 12px;
+  }
+  .ph-stats .row {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px;
+    border-bottom: 1px dashed var(--line);
+    padding: 4px 0; color: var(--paper-2);
+  }
+  .ph-stats .row b { color: var(--paper); font-weight: 500; }
+
+  .ph-combine {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  .ph-combine-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .ph-combine-head h4 {
+    font-family: var(--serif); font-weight: 400;
+    font-style: italic; font-size: 18px;
+  }
+  .ph-combine-head span {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+  }
+  .combine-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .combine-stat {
+    border-left: 1px solid var(--line-2);
+    padding-left: 10px;
+  }
+  .combine-stat .v {
+    font-family: var(--mono); font-size: 22px;
+    font-weight: 500; letter-spacing: 0.02em;
+  }
+  .combine-stat .v sup {
+    font-size: 12px; color: var(--ember); font-weight: 400;
+    margin-left: 4px;
+  }
+  .combine-stat .l {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--mute); letter-spacing: 0.16em;
+    text-transform: uppercase; margin-top: 3px;
+  }
+  .combine-stat .pct {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mint); margin-top: 2px;
+    letter-spacing: 0.1em;
+  }
+
+  /* radar */
+  .radar-card { display: flex; flex-direction: column; }
+  .radar-card h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-style: italic; font-size: 22px; margin-bottom: 4px;
+  }
+  .radar-card .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+    margin-bottom: 18px;
+  }
+  .radar-wrap { display: flex; align-items: center; justify-content: center; flex: 1; }
+  .radar-legend {
+    margin-top: 18px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-family: var(--mono); font-size: 11px;
+  }
+  .radar-legend .item {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--paper-2);
+  }
+  .radar-legend .swatch {
+    width: 10px; height: 10px;
+  }
+  .radar-legend .swatch.c1 { background: var(--ember); }
+  .radar-legend .swatch.c2 { background: var(--mint); border: 1px dashed; }
+
+  /* simulation outcome distribution */
+  .dist-card .panel-head { padding: 0 0 14px 0; border: none; }
+  .dist-card h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-style: italic; font-size: 22px;
+  }
+  .dist-card .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+    margin-bottom: 22px;
+  }
+  .dist-row {
+    display: grid;
+    grid-template-columns: 24px 90px 1fr 50px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-family: var(--mono); font-size: 11.5px;
+  }
+  .dist-row:last-child { border-bottom: none; }
+  .dist-pick {
+    color: var(--ember); font-weight: 500;
+    text-align: right; letter-spacing: 0.04em;
+  }
+  .dist-team {
+    color: var(--paper-2); letter-spacing: 0.06em;
+    font-size: 11px;
+  }
+  .dist-bar { height: 14px; background: var(--ink-3); position: relative; }
+  .dist-bar span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--ember-deep), var(--ember));
+    position: relative;
+  }
+  .dist-bar.muted span {
+    background: linear-gradient(90deg, #444, #666);
+    opacity: 0.6;
+  }
+  .dist-bar.win span {
+    background: linear-gradient(90deg, var(--mint-deep), var(--mint));
+  }
+  .dist-pct {
+    color: var(--paper); font-weight: 500; text-align: right;
+  }
+
+  .dist-foot {
+    margin-top: 18px; padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .dist-foot .cell {
+    text-align: center;
+  }
+  .dist-foot .cell .v {
+    font-family: var(--serif); font-size: 28px; line-height: 1;
+    color: var(--paper);
+  }
+  .dist-foot .cell .v em { color: var(--ember); font-style: italic; }
+  .dist-foot .cell .l {
+    font-family: var(--mono); font-size: 9px;
+    color: var(--mute); letter-spacing: 0.16em;
+    text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* ===================== ECOSYSTEM ===================== */
+  .eco {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 16px;
+  }
+  .feed-card {
+    background: var(--ink-2); border: 1px solid var(--line);
+    padding: 0;
+  }
+  .feed-card .panel-head { background: var(--ink-3); }
+  .feed-list { padding: 8px 0; max-height: 540px; overflow: hidden; position: relative; }
+  .feed-list::after {
+    content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, transparent, var(--ink-2));
+    pointer-events: none;
+  }
+  .tweet {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+  }
+  .tw-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #2A3340, #1B2129);
+    border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 14px;
+    color: var(--paper);
+  }
+  .tw-avatar.verified::after {
+    content: "✓"; position: relative; left: 12px; top: 12px;
+    background: var(--azure); color: var(--ink); border-radius: 50%;
+    width: 12px; height: 12px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 8px;
+  }
+  .tw-head {
+    display: flex; align-items: baseline; gap: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--paper);
+  }
+  .tw-head b { font-weight: 600; }
+  .tw-head .h { color: var(--mute); font-size: 11.5px; }
+  .tw-head .t { color: var(--mute); font-size: 11px; margin-left: auto; font-family: var(--mono); }
+  .tw-text {
+    margin-top: 4px; font-size: 13.5px; color: var(--paper-2);
+    line-height: 1.45;
+  }
+  .tw-text .mt { color: var(--mint); font-weight: 500; }
+  .tw-text .em { color: var(--ember); font-weight: 500; }
+  .tw-text .tag { color: var(--azure); }
+  .tw-meta {
+    margin-top: 10px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.1em;
+    display: flex; gap: 18px;
+  }
+  .tw-meta .v { color: var(--paper-2); }
+
+  .agent-flag {
+    display: inline-block; margin-left: 6px;
+    font-family: var(--mono); font-size: 8.5px;
+    background: var(--ink); color: var(--mint);
+    padding: 1px 5px; letter-spacing: 0.16em;
+    border: 1px solid var(--mint-deep);
+    vertical-align: 2px;
+  }
+
+  /* sentiment heatmap */
+  .heatmap-card { display: flex; flex-direction: column; }
+  .heatmap-card h3 {
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    font-size: 20px;
+  }
+  .heatmap-card .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+    margin-bottom: 18px;
+  }
+  .hm-axis {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 9px;
+    color: var(--mute); letter-spacing: 0.14em;
+    margin-bottom: 8px;
+  }
+  .hm-grid {
+    display: grid;
+    grid-template-columns: 56px repeat(12, 1fr);
+    gap: 2px;
+  }
+  .hm-grid .label {
+    font-family: var(--mono); font-size: 9.5px;
+    color: var(--paper-2); letter-spacing: 0.06em;
+    display: flex; align-items: center;
+    text-transform: uppercase;
+  }
+  .hm-cell {
+    aspect-ratio: 1 / 1;
+    background: var(--ink-3);
+    position: relative;
+  }
+  .hm-cell.s1 { background: rgba(125,249,201,0.10); }
+  .hm-cell.s2 { background: rgba(125,249,201,0.25); }
+  .hm-cell.s3 { background: rgba(125,249,201,0.45); }
+  .hm-cell.s4 { background: rgba(125,249,201,0.70); }
+  .hm-cell.s5 { background: rgba(125,249,201,0.95); }
+  .hm-cell.n1 { background: rgba(255,91,20,0.10); }
+  .hm-cell.n2 { background: rgba(255,91,20,0.25); }
+  .hm-cell.n3 { background: rgba(255,91,20,0.50); }
+  .hm-cell.n4 { background: rgba(255,91,20,0.78); }
+  .hm-cell.n5 { background: rgba(255,91,20,0.95); }
+  .hm-cell.spike::after {
+    content: ""; position: absolute; inset: 1px;
+    border: 1px solid var(--paper);
+    pointer-events: none;
+  }
+  .hm-foot {
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--mute); letter-spacing: 0.1em;
+  }
+  .hm-foot b { color: var(--paper); font-weight: 500; }
+
+  /* fan reaction */
+  .fans-card {
+    background: var(--ink-2); border: 1px solid var(--line);
+    padding: 22px; display: flex; flex-direction: column;
+  }
+  .fans-card h3 {
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    font-size: 20px;
+  }
+  .fans-card .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+    margin-bottom: 18px;
+  }
+  .fans-meter {
+    height: 14px;
+    background: linear-gradient(90deg,
+      var(--crimson) 0%, var(--ember) 30%,
+      #888 50%, var(--mint-deep) 70%, var(--mint) 100%);
+    position: relative; margin-bottom: 12px;
+  }
+  .fans-meter::after {
+    content: ""; position: absolute; top: -4px; left: 28%;
+    width: 2px; height: 22px; background: var(--paper);
+    box-shadow: 0 0 0 1px var(--ink);
+  }
+  .fans-axis {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    color: var(--mute); text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .word-cloud {
+    display: flex; flex-wrap: wrap; gap: 8px 14px;
+    align-items: baseline; margin-bottom: 16px;
+    font-family: var(--serif); line-height: 1.1;
+  }
+  .word-cloud span { color: var(--paper-2); }
+  .word-cloud .xl { font-size: 32px; color: var(--ember); font-style: italic; }
+  .word-cloud .lg { font-size: 24px; color: var(--paper); }
+  .word-cloud .md { font-size: 18px; color: var(--paper-2); }
+  .word-cloud .sm { font-size: 14px; color: var(--mute); }
+  .word-cloud .mt { color: var(--mint); }
+  .word-cloud .gd { color: var(--gold); font-style: italic; }
+
+  .fan-bars { border-top: 1px solid var(--line); padding-top: 14px; }
+  .fan-bar {
+    display: grid; grid-template-columns: 100px 1fr 36px;
+    align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px;
+    margin-bottom: 8px;
+    color: var(--paper-2);
+  }
+  .fan-bar .t {
+    height: 6px; background: var(--ink-3); position: relative;
+  }
+  .fan-bar .t span {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: var(--ember);
+  }
+  .fan-bar.pos .t span { background: var(--mint); }
+  .fan-bar .v { text-align: right; color: var(--paper); }
+
+  /* ===================== MLS DUAL MODE ===================== */
+  .mls {
+    background:
+      radial-gradient(circle at 100% 0%, rgba(125,249,201,0.06), transparent 50%),
+      var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 32px 32px 24px;
+    margin-top: 16px;
+    position: relative;
+  }
+  .mls-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px; align-items: end;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line); padding-bottom: 20px;
+  }
+  .mls-head .e {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; color: var(--mint);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mls-head .e::before {
+    content: ""; width: 28px; height: 1px; background: var(--mint);
+  }
+  .mls-head h2 {
+    font-family: var(--serif); font-weight: 300; font-style: italic;
+    font-size: 48px; letter-spacing: -0.02em; line-height: 0.95;
+  }
+  .mls-head h2 b { font-style: normal; font-weight: 400; color: var(--mint); }
+  .mls-head .right {
+    text-align: right; font-family: var(--mono); font-size: 11px;
+    color: var(--mute); letter-spacing: 0.14em; line-height: 1.7;
+  }
+  .mls-head .right b { color: var(--paper); font-weight: 500; }
+
+  .mls-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 22px;
+  }
+
+  .mls-flow {
+    background: var(--ink); border: 1px solid var(--line);
+    padding: 22px; min-height: 320px;
+    position: relative; overflow: hidden;
+  }
+  .mls-flow h4 {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.18em; color: var(--mute);
+    margin-bottom: 22px;
+  }
+
+  .flow-svg { width: 100%; height: 320px; display: block; }
+
+  .mls-target {
+    background: var(--ink); border: 1px solid var(--line);
+    padding: 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .mls-target .num {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.2em; color: var(--mint);
+  }
+  .mls-target h4 {
+    font-family: var(--serif); font-size: 28px; font-weight: 400;
+    line-height: 1; letter-spacing: -0.01em;
+  }
+  .mls-target h4 em { font-style: italic; color: var(--gold); }
+  .mls-target .from {
+    font-family: var(--serif); font-style: italic;
+    color: var(--paper-2); font-size: 14px;
+  }
+  .target-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px 12px; margin-top: 4px;
+    border-top: 1px dashed var(--line); padding-top: 12px;
+  }
+  .target-stats .row {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--paper-2);
+  }
+  .target-stats .row b { color: var(--paper); font-weight: 500; }
+
+  .market-bid {
+    margin-top: auto; padding: 14px;
+    border: 1px solid var(--ember);
+    background: rgba(255,91,20,0.06);
+  }
+  .market-bid .l {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.18em; color: var(--ember);
+    margin-bottom: 4px;
+  }
+  .market-bid .v {
+    font-family: var(--serif); font-size: 22px;
+    color: var(--paper);
+  }
+  .market-bid .v small {
+    font-family: var(--sans); color: var(--mute); font-size: 11px;
+    margin-left: 8px; letter-spacing: 0.06em;
+  }
+  .market-bid .delta {
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--ember); margin-top: 2px; letter-spacing: 0.06em;
+  }
+
+  .mls-scenarios {
+    background: var(--ink); border: 1px solid var(--line);
+    padding: 22px;
+  }
+  .mls-scenarios h4 {
+    font-family: var(--serif); font-style: italic;
+    font-size: 18px; margin-bottom: 4px;
+  }
+  .mls-scenarios .sub {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.16em;
+    margin-bottom: 16px;
+  }
+  .scen-row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    gap: 10px; align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 12.5px; color: var(--paper-2); line-height: 1.4;
+  }
+  .scen-row:last-child { border-bottom: none; }
+  .scen-row .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--paper-2); margin-top: 6px;
+  }
+  .scen-row .dot.high { background: var(--mint); }
+  .scen-row .dot.med  { background: var(--gold); }
+  .scen-row .dot.low  { background: var(--ember); }
+  .scen-row b { color: var(--paper); font-weight: 500; }
+  .scen-row .pct {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--paper); letter-spacing: 0.04em;
+    text-align: right; padding-top: 1px;
+  }
+  .scen-row .pct small {
+    display: block; font-size: 9px; color: var(--mute);
+    letter-spacing: 0.14em; margin-top: 2px;
+  }
+
+  /* ===================== INPUTS / METHODOLOGY ===================== */
+  .inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .input-card {
+    background: var(--ink-2); border: 1px solid var(--line);
+    padding: 28px; position: relative;
+    min-height: 280px;
+    display: flex; flex-direction: column;
+  }
+  .input-card .num {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.22em; color: var(--ember);
+  }
+  .input-card h3 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: 30px; letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin-top: 12px; margin-bottom: 16px;
+  }
+  .input-card h3 em { font-style: italic; color: var(--gold); }
+  .input-card p {
+    color: var(--paper-2); font-size: 14px;
+    line-height: 1.6; max-width: 380px;
+  }
+  .input-card .marks {
+    margin-top: auto; padding-top: 18px; border-top: 1px dashed var(--line);
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .input-card .marks span {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; color: var(--paper-2);
+    border: 1px solid var(--line-2); padding: 3px 8px;
+    text-transform: uppercase;
+  }
+  .input-card .marks span.hot {
+    border-color: var(--ember); color: var(--ember);
+  }
+  .input-card .marks span.mt {
+    border-color: var(--mint-deep); color: var(--mint);
+  }
+
+  .input-card .stamp {
+    position: absolute; top: 22px; right: 22px;
+    font-family: var(--mono); font-size: 9px;
+    color: var(--mute); letter-spacing: 0.18em;
+    border: 1px solid var(--line-2); padding: 4px 8px;
+  }
+
+  /* ===================== METHODOLOGY MANIFESTO ===================== */
+  .manifesto {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 80px 28px;
+    background:
+      linear-gradient(180deg, var(--ink) 0%, #07080C 100%);
+    position: relative;
+  }
+  .manifesto-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 64px;
+  }
+  .manifesto-eyebrow {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.24em; color: var(--ember);
+  }
+  .manifesto-eyebrow span { display: block; color: var(--mute); margin-top: 4px; }
+  .manifesto h2 {
+    font-family: var(--serif); font-weight: 300;
+    font-size: clamp(34px, 4vw, 56px);
+    line-height: 1.05; letter-spacing: -0.02em;
+    color: var(--paper);
+  }
+  .manifesto h2 em { font-style: italic; color: var(--ember); }
+  .manifesto h2 .gd { color: var(--gold); font-style: italic; }
+  .manifesto-foot {
+    margin-top: 48px; display: grid;
+    grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+  .manifesto-cell .v {
+    font-family: var(--serif); font-size: 36px;
+    color: var(--paper); line-height: 1;
+  }
+  .manifesto-cell .v em { color: var(--mint); font-style: italic; }
+  .manifesto-cell .l {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ===================== FOOTER ===================== */
+  footer {
+    padding: 48px 28px 32px;
+    max-width: 1620px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px; align-items: end;
+    color: var(--mute);
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  footer b { color: var(--paper); font-weight: 500; }
+  footer .end { text-align: right; }
+
+  /* ===================== INSIDE THE SIM ===================== */
+  .sim-intro {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px; align-items: center;
+  }
+  .sim-intro .copy h3 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 26px; line-height: 1.15; letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .sim-intro .copy h3 em { color: var(--ember); }
+  .sim-intro .copy p {
+    color: var(--paper-2); font-size: 14px; line-height: 1.65;
+  }
+  .sim-intro .copy p + p { margin-top: 10px; }
+  .sim-intro .copy b { color: var(--paper); font-weight: 500; }
+
+  .flowchain {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .flowchain .step {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 12px; align-items: center;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    color: var(--paper);
+    position: relative;
+  }
+  .flowchain .step .n {
+    font-family: var(--mono); color: var(--ember);
+    font-weight: 700;
+  }
+  .flowchain .step .v {
+    color: var(--mint); font-size: 10px;
+  }
+  .flowchain .arrow {
+    text-align: center; color: var(--ember); font-family: var(--mono);
+    font-size: 14px; line-height: 1; padding: 0;
+  }
+  .flowchain .step.return {
+    border-color: var(--mint-deep);
+    background: linear-gradient(90deg, rgba(125,249,201,0.06), transparent);
+  }
+  .flowchain .step.return .n { color: var(--mint); }
+
+  .subhead {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.24em; color: var(--ember);
+    margin: 36px 0 16px;
+    display: flex; align-items: center; gap: 14px;
+    text-transform: uppercase;
+  }
+  .subhead::before {
+    content: ""; flex: 0 0 auto;
+    width: 28px; height: 1px; background: var(--ember);
+  }
+  .subhead small {
+    color: var(--mute); margin-left: auto;
+    font-size: 10px; letter-spacing: 0.18em;
+    font-weight: 400;
+  }
+
+  /* THE CAST */
+  .cast-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .persona {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 18px;
+    display: flex; flex-direction: column;
+    gap: 14px; position: relative;
+  }
+  .persona::before {
+    content: attr(data-platform);
+    position: absolute; top: -1px; right: -1px;
+    font-family: var(--mono);
+    font-size: 9px; letter-spacing: 0.2em;
+    background: var(--ink-3);
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-top: none; border-right: none;
+    color: var(--paper-2);
+  }
+  .persona[data-platform="X / TWITTER"]::before { color: var(--azure); }
+  .persona[data-platform="REDDIT"]::before     { color: var(--ember); }
+  .persona[data-platform="SPORTS RADIO"]::before { color: var(--gold); }
+  .persona[data-platform="DISCORD / FORUM"]::before { color: var(--mint); }
+  .persona[data-platform="CABLE TV"]::before { color: var(--paper); }
+
+  .p-head {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 12px; align-items: center;
+  }
+  .p-avatar {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #2A3340, #14181F);
+    border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 18px; color: var(--paper);
+  }
+  .p-avatar.round { border-radius: 50%; }
+  .p-meta .name { font-weight: 600; font-size: 14.5px; color: var(--paper); line-height: 1.1; }
+  .p-meta .handle { font-family: var(--mono); font-size: 11px; color: var(--mute); margin-top: 2px; letter-spacing: 0.04em; }
+  .p-arch {
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.18em; color: var(--ember);
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .p-arch b { color: var(--paper); font-weight: 500; }
+
+  .p-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .p-stat .v {
+    font-family: var(--mono); font-weight: 500; font-size: 14px;
+    color: var(--paper); letter-spacing: 0.02em;
+  }
+  .p-stat .v small { color: var(--mute); font-size: 10px; font-weight: 400; }
+  .p-stat .l {
+    font-family: var(--mono); font-size: 8.5px;
+    color: var(--mute); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  .p-bias { display: grid; gap: 6px; }
+  .p-bias .row {
+    display: grid; grid-template-columns: 92px 1fr 24px;
+    gap: 10px; align-items: center;
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .p-bias .row .l { color: var(--mute); }
+  .p-bias .row .v { color: var(--paper); text-align: right; }
+  .p-bias .row .t { height: 3px; background: var(--ink-4); position: relative; }
+  .p-bias .row .t span {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: var(--paper-2);
+  }
+  .p-bias .row.hi .t span { background: var(--ember); }
+  .p-bias .row.mt .t span { background: var(--mint); }
+  .p-bias .row.gd .t span { background: var(--gold); }
+
+  .p-sample {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--mint);
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--paper-2); line-height: 1.5;
+    position: relative;
+  }
+  .p-sample::before {
+    content: "▸ GENERATED IN-SCENARIO · 23:47 ET";
+    display: block;
+    font-family: var(--mono); font-size: 8.5px;
+    letter-spacing: 0.18em; color: var(--mint);
+    margin-bottom: 6px;
+  }
+  .p-sample b { color: var(--paper); font-weight: 500; }
+  .p-sample em { color: var(--ember); font-style: normal; font-weight: 500; }
+
+  /* CASCADE */
+  .cascade {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .cascade-head {
+    display: grid; grid-template-columns: 1fr auto;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+    background: linear-gradient(90deg, rgba(255,91,20,0.06), transparent 60%);
+  }
+  .cascade-head h4 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 19px; display: flex; align-items: center; gap: 12px;
+  }
+  .cascade-head .meta {
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--mute); letter-spacing: 0.14em;
+  }
+  .cascade-head .meta b { color: var(--paper); font-weight: 500; }
+
+  .lane-key {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 12px 22px;
+    border-bottom: 1px dashed var(--line);
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  .lane-key span { display: flex; align-items: center; gap: 6px; }
+  .lane-key .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .casc-row {
+    display: grid;
+    grid-template-columns: 84px 96px 1fr 110px;
+    gap: 16px;
+    padding: 14px 22px;
+    border-bottom: 1px dashed var(--line);
+    align-items: start;
+    position: relative;
+    transition: 0.15s;
+  }
+  .casc-row:hover { background: rgba(255,255,255,0.018); }
+  .casc-row:last-child { border-bottom: none; }
+  .casc-row.event {
+    background: linear-gradient(90deg, rgba(255,91,20,0.12), transparent 70%);
+    border-bottom: 1px solid var(--ember);
+  }
+  .casc-row.faded { opacity: 0.72; }
+
+  .casc-time {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--ember); letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .casc-time small {
+    display: block; color: var(--mute); font-size: 9px;
+    letter-spacing: 0.16em; margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .casc-lane {
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 4px 8px; border: 1px solid var(--line-2);
+    text-align: center;
+    color: var(--paper-2);
+    align-self: center;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .casc-lane.event   { background: var(--ember); color: var(--ink); border-color: var(--ember); font-weight: 700; }
+  .casc-lane.insider { color: var(--ember); border-color: var(--ember); }
+  .casc-lane.beat    { color: var(--azure); border-color: var(--azure); }
+  .casc-lane.fan     { color: var(--mint); border-color: var(--mint-deep); }
+  .casc-lane.radio   { color: var(--gold); border-color: var(--gold); }
+  .casc-lane.gm      { color: var(--paper); border-color: var(--paper); background: rgba(255,255,255,0.05); }
+  .casc-lane.media   { color: var(--paper-2); border-color: var(--line-2); }
+  .casc-lane.meme    { color: var(--ember); border-color: var(--ember); border-style: dashed; }
+
+  .casc-body { font-size: 13px; color: var(--paper-2); line-height: 1.5; }
+  .casc-body .who {
+    font-weight: 500; color: var(--paper);
+    font-family: var(--sans); font-size: 13.5px;
+  }
+  .casc-body .who small {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.04em;
+    margin-left: 8px; font-weight: 400;
+  }
+  .casc-body .text { margin-top: 4px; font-size: 12.5px; }
+  .casc-body .text .em { color: var(--ember); font-weight: 500; }
+  .casc-body .text .mt { color: var(--mint); font-weight: 500; }
+  .casc-body .text .gd { color: var(--gold); font-weight: 500; }
+  .casc-body .reply {
+    font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.12em; color: var(--mute);
+    margin-top: 6px; text-transform: uppercase;
+  }
+  .casc-body .reply b { color: var(--paper-2); font-weight: 500; }
+
+  .casc-met {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.06em;
+    text-align: right; align-self: center; line-height: 1.6;
+  }
+  .casc-met b {
+    color: var(--paper); font-weight: 500;
+    display: block; font-size: 13px; letter-spacing: 0.02em;
+  }
+
+  /* CHANNELS */
+  .channels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .channel {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    display: flex; flex-direction: column;
+  }
+  .channel-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink-3);
+  }
+  .channel-head .icon {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    flex: 0 0 auto;
+  }
+  .channel-head .meta {
+    margin-left: auto;
+    font-size: 9px; color: var(--mute); letter-spacing: 0.16em;
+    font-weight: 400;
+  }
+  .ch-body { padding: 12px 14px; flex: 1; }
+
+  /* X / Twitter */
+  .ch-x .channel-head .icon {
+    background: var(--azure); color: var(--ink); border-radius: 50%;
+  }
+  .x-tweet {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 28px 1fr; gap: 10px;
+  }
+  .x-tweet:first-child { padding-top: 0; }
+  .x-tweet:last-child { border-bottom: none; }
+  .x-av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #2A3340, #14181F);
+    border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 12px; color: var(--paper);
+  }
+  .x-head {
+    font-family: var(--sans); font-size: 12px;
+    color: var(--paper);
+    display: flex; gap: 4px; align-items: baseline;
+  }
+  .x-head b { font-weight: 600; }
+  .x-head .h { color: var(--mute); font-size: 11px; font-family: var(--mono); }
+  .x-head .t {
+    color: var(--mute); font-size: 10px;
+    margin-left: auto; font-family: var(--mono);
+  }
+  .x-text {
+    font-size: 12.5px; color: var(--paper-2);
+    margin-top: 3px; line-height: 1.45;
+  }
+  .x-text .em { color: var(--ember); font-weight: 500; }
+  .x-text .mt { color: var(--mint); font-weight: 500; }
+  .x-text .tag { color: var(--azure); }
+  .x-eng {
+    margin-top: 6px;
+    font-family: var(--mono); font-size: 9.5px;
+    color: var(--mute); letter-spacing: 0.12em;
+    display: flex; gap: 14px;
+  }
+  .x-eng b { color: var(--paper-2); font-weight: 500; }
+
+  /* Reddit */
+  .ch-reddit .channel-head .icon {
+    background: var(--ember); color: var(--paper); border-radius: 4px;
+    font-family: var(--serif); font-style: italic;
+  }
+  .r-thread { padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .r-thread:first-child { padding-top: 0; }
+  .r-thread:last-child { border-bottom: none; }
+  .r-meta {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .r-meta b { color: var(--ember); font-weight: 500; }
+  .r-meta .karma { color: var(--paper-2); margin-right: 8px; }
+  .r-title {
+    font-family: var(--sans); font-weight: 500; font-size: 13.5px;
+    color: var(--paper); line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .r-title .flair {
+    font-family: var(--mono); font-size: 9px;
+    background: var(--ember); color: var(--ink);
+    padding: 1px 6px; letter-spacing: 0.14em;
+    margin-right: 6px; vertical-align: 2px;
+  }
+  .r-comment {
+    font-size: 12px; color: var(--paper-2);
+    border-left: 2px solid var(--line-2);
+    padding-left: 10px; margin-top: 8px;
+    line-height: 1.45;
+  }
+  .r-comment .u {
+    display: block;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mute); letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+  .r-comment .u b { color: var(--ember); font-weight: 500; }
+  .r-comment .u .karma { color: var(--paper-2); margin-left: 6px; }
+  .r-comment.deep { margin-left: 14px; opacity: 0.85; }
+
+  /* Sports Radio */
+  .ch-radio .channel-head .icon {
+    background: var(--gold); color: var(--ink); border-radius: 50%;
+  }
+  .ch-radio .ch-body {
+    background:
+      repeating-linear-gradient(180deg, transparent 0 26px, rgba(255,255,255,0.018) 26px 27px),
+      var(--ink-2);
+  }
+  .radio-meta {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.16em; color: var(--gold);
+    margin-bottom: 12px; text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .radio-meta b { color: var(--paper); font-weight: 500; }
+  .radio-line {
+    margin-bottom: 12px;
+    font-family: var(--mono); font-size: 11.5px;
+    line-height: 1.65; color: var(--paper-2);
+  }
+  .radio-line .who {
+    display: block;
+    font-size: 9.5px; letter-spacing: 0.18em;
+    margin-bottom: 2px;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .radio-line .who.host   { color: var(--gold); }
+  .radio-line .who.caller { color: var(--paper); }
+  .radio-line .who.bumper { color: var(--mute); font-style: italic; }
+  .radio-line em { color: var(--paper); font-style: italic; }
+  .radio-line .b { color: var(--ember); }
+
+  /* Slack */
+  .ch-slack .channel-head .icon {
+    background: var(--mint); color: var(--ink); border-radius: 4px;
+    font-family: var(--mono); font-weight: 700;
+  }
+  .slack-channel {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--mint); letter-spacing: 0.14em;
+    padding-bottom: 10px; margin-bottom: 8px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .slack-channel b { color: var(--paper); font-weight: 500; }
+  .slack-msg {
+    display: grid; grid-template-columns: 24px 1fr;
+    gap: 10px; padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .slack-msg:last-child { border-bottom: none; }
+  .slack-av {
+    width: 24px; height: 24px; border-radius: 4px;
+    background: linear-gradient(135deg, #2A3340, #14181F);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 11px; color: var(--paper);
+  }
+  .slack-head {
+    display: flex; gap: 6px; align-items: baseline;
+    font-family: var(--sans); font-size: 12.5px;
+  }
+  .slack-head b { font-weight: 600; color: var(--paper); }
+  .slack-head .t { color: var(--mute); font-size: 10px; font-family: var(--mono); }
+  .slack-text {
+    color: var(--paper-2); margin-top: 2px;
+    font-size: 12.5px; line-height: 1.45;
+  }
+  .slack-text .em { color: var(--ember); font-weight: 500; }
+  .slack-text .mt { color: var(--mint); font-weight: 500; }
+  .slack-react {
+    margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .slack-react span {
+    background: var(--ink); border: 1px solid var(--line);
+    padding: 2px 8px; font-family: var(--mono);
+    font-size: 10px; color: var(--paper-2);
+    border-radius: 12px;
+  }
+  .slack-react span b { color: var(--mint); font-weight: 500; margin-left: 3px; }
+
+  /* ===================== RESPONSIVE LIGHT-TOUCH ===================== */
+  @media (max-width: 1280px) {
+    .deck { grid-template-columns: 1fr; }
+    .deep, .eco, .mls-grid, .inputs { grid-template-columns: 1fr; }
+    .cast-grid { grid-template-columns: repeat(2, 1fr); }
+    .channels { grid-template-columns: repeat(2, 1fr); }
+    .sim-intro { grid-template-columns: 1fr; gap: 24px; }
+    .topbar-row { grid-template-columns: 1fr auto; }
+    .topbar-status { display: none; }
+  }
+  @media (max-width: 720px) {
+    .cast-grid, .channels { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">
-      <span class="logo-mark">DRO</span>
-      <span class="logo-suffix">v0.1 · Combine '26</span>
+<!-- ======================== TOP BAR ======================== -->
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>DRO <small style="color:var(--mute); letter-spacing:0.18em; margin-left:8px; font-weight:400;">// DECISION REHEARSAL OPERATIONS</small></span>
     </div>
-    <nav class="nav">
-      <a href="#">Method</a>
-      <a href="#">Combine Live</a>
-      <a href="#">Big Board</a>
-      <a href="#">Pricing</a>
-      <a href="#" class="nav-cta">Request access</a>
-    </nav>
+    <div class="topbar-status">
+      <span><span class="pulse"></span> &nbsp;LIVE&nbsp; <b>NFL DRAFT 2026 // RND 1</b></span>
+      <span>SIM&nbsp;<b>04,127</b>&nbsp;/&nbsp;10,000</span>
+      <span>RUNTIME&nbsp;<b>00:14:38</b></span>
+      <span>AGENTS&nbsp;<b>184</b>&nbsp;<span class="mu">act.</span></span>
+      <span>COMPUTE&nbsp;<b>3.2k</b>&nbsp;<span class="mu">vCPU·s</span></span>
+    </div>
+    <div class="topbar-end">
+      <span>POWERED&nbsp;BY&nbsp;<b style="color:var(--paper)">MIROFISH</b></span>
+      <span>JS&nbsp;//&nbsp;DEV BUILD</span>
+    </div>
   </div>
-</header>
+</div>
 
-<!-- HERO -->
+<!-- ticker -->
+<div class="ticker">
+  <div class="ticker-label">SIM FEED</div>
+  <div class="ticker-track">
+    <span><b>BREAKING</b> // ACROSS 4,127 SIMS, <b>QB1 WHITFIELD</b> SLIDES PAST PICK 7 IN <b>34.2%</b> OF BRANCHES</span>
+    <span>WAR-ROOM AGENT <i>BAL/HORTIZ-37</i> INITIATED TRADE-UP DELIBERATION → <i>22 SIMS</i></span>
+    <span><b>MEDICAL FLAG INJECTED</b> // EDGE DEVEREAUX // STRESS REACTION L4 → MARKET REPRICED</span>
+    <span>BEAT-WRITER AGENT <i>@FOWLER_BREAKING</i> POSTING IN <i>76.1%</i> OF BRANCHES WITHIN 4 MIN</span>
+    <span>FANBASE SENTIMENT <b>-0.42</b> ON CHI WHEN PROJECTED PICK = WR2 LINDQVIST</span>
+    <span><b>BREAKING</b> // ACROSS 4,127 SIMS, <b>QB1 WHITFIELD</b> SLIDES PAST PICK 7 IN <b>34.2%</b> OF BRANCHES</span>
+    <span>WAR-ROOM AGENT <i>BAL/HORTIZ-37</i> INITIATED TRADE-UP DELIBERATION → <i>22 SIMS</i></span>
+    <span><b>MEDICAL FLAG INJECTED</b> // EDGE DEVEREAUX // STRESS REACTION L4 → MARKET REPRICED</span>
+    <span>BEAT-WRITER AGENT <i>@FOWLER_BREAKING</i> POSTING IN <i>76.1%</i> OF BRANCHES WITHIN 4 MIN</span>
+    <span>FANBASE SENTIMENT <b>-0.42</b> ON CHI WHEN PROJECTED PICK = WR2 LINDQVIST</span>
+  </div>
+</div>
+
+<!-- ======================== HERO ======================== -->
 <section class="hero">
-  <div class="container hero-grid">
-    <div class="fade-in">
-      <div class="eyebrow">Swarm-Simulated Draft Intelligence · Built on MiroFish</div>
-      <h1 class="headline">
-        Every draft model gives you a number. <em>DRO gives you the room — and lets you perturb it.</em>
-      </h1>
-      <p class="subhead">
-        A petri dish for every "what if." What if Hunter slides past ten? What if QB1 fails his Day-2 medical? What if PHI trades up to three? Drop the perturbation in the dish and watch 525 personas — GMs, scouts, agents, owners, beat writers — react across ten thousand parallel realities. The blind spots teams would have missed surface in monospace.
-      </p>
-      <div class="cta-row">
-        <a href="demo.html" class="btn btn-primary">
-          See the engine
-          <span class="btn-arrow">→</span>
-        </a>
-        <a href="#how" class="btn btn-ghost">
-          How it works
-        </a>
-      </div>
-    </div>
-
-    <!-- River plot card -->
-    <div class="river-card fade-in delay-2">
-      <div class="river-header">
-        <div>
-          <div class="river-title">Bowers, Mason — TE, Georgia</div>
-          <div class="river-sub">10,000 simulations · 32 team boards · live</div>
-        </div>
-        <div class="river-stat">
-          <div class="river-stat-label">Board variance</div>
-          <div class="river-stat-value">+47%</div>
-        </div>
-      </div>
-
-      <svg class="river-svg" viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" aria-label="River plot of projected draft slot over time">
-        <!-- Grid lines -->
-        <g stroke="#1f2433" stroke-width="0.5" fill="none">
-          <line x1="40" y1="40" x2="780" y2="40"/>
-          <line x1="40" y1="100" x2="780" y2="100"/>
-          <line x1="40" y1="160" x2="780" y2="160"/>
-          <line x1="40" y1="220" x2="780" y2="220"/>
-          <line x1="40" y1="280" x2="780" y2="280"/>
-        </g>
-
-        <!-- Y-axis labels -->
-        <g font-family="JetBrains Mono, monospace" font-size="9" fill="#5b6378">
-          <text x="32" y="44" text-anchor="end">1</text>
-          <text x="32" y="104" text-anchor="end">8</text>
-          <text x="32" y="164" text-anchor="end">16</text>
-          <text x="32" y="224" text-anchor="end">24</text>
-          <text x="32" y="284" text-anchor="end">32</text>
-          <text x="32" y="318" text-anchor="end" fill="#3a4256">UDFA</text>
-        </g>
-
-        <!-- Confidence band (filled region) -->
-        <path d="M 40,150 C 120,140 180,130 260,135 C 340,140 400,170 480,180 C 560,190 640,200 780,170 L 780,90 C 640,100 560,90 480,80 C 400,75 340,70 260,75 C 180,80 120,85 40,95 Z"
-              fill="url(#bandGrad)" opacity="0.18"/>
-        <defs>
-          <linearGradient id="bandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#c9a857"/>
-            <stop offset="100%" stop-color="#c9a857" stop-opacity="0.4"/>
-          </linearGradient>
-          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#c9a857" stop-opacity="0.3"/>
-            <stop offset="50%" stop-color="#c9a857" stop-opacity="0.7"/>
-            <stop offset="100%" stop-color="#e8654d" stop-opacity="0.7"/>
-          </linearGradient>
-        </defs>
-
-        <!-- Simulation trajectories (will be JS-generated) -->
-        <g id="trajectories" stroke-width="0.8" fill="none" opacity="0.35"></g>
-
-        <!-- Median line -->
-        <path d="M 40,120 C 120,115 180,108 260,105 C 340,108 400,128 480,135 C 560,142 640,148 780,128"
-              stroke="#ede4d3" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-        <!-- Event markers -->
-        <g>
-          <line x1="180" y1="36" x2="180" y2="296" stroke="#2a3142" stroke-width="0.5" stroke-dasharray="2,3"/>
-          <circle cx="180" cy="100" r="3.5" fill="#c9a857" stroke="#0e1118" stroke-width="2"/>
-          <text x="180" y="26" font-family="JetBrains Mono, monospace" font-size="8" fill="#97a0b5" text-anchor="middle" letter-spacing="0.1em">FORTY · 4.61</text>
-
-          <line x1="380" y1="36" x2="380" y2="296" stroke="#2a3142" stroke-width="0.5" stroke-dasharray="2,3"/>
-          <circle cx="380" cy="130" r="3.5" fill="#e8654d" stroke="#0e1118" stroke-width="2"/>
-          <text x="380" y="26" font-family="JetBrains Mono, monospace" font-size="8" fill="#97a0b5" text-anchor="middle" letter-spacing="0.1em">MEDICAL FLAG</text>
-
-          <line x1="580" y1="36" x2="580" y2="296" stroke="#2a3142" stroke-width="0.5" stroke-dasharray="2,3"/>
-          <circle cx="580" cy="148" r="3.5" fill="#7eb6b6" stroke="#0e1118" stroke-width="2"/>
-          <text x="580" y="26" font-family="JetBrains Mono, monospace" font-size="8" fill="#97a0b5" text-anchor="middle" letter-spacing="0.1em">PRO DAY</text>
-        </g>
-
-        <!-- X-axis labels -->
-        <g font-family="JetBrains Mono, monospace" font-size="9" fill="#5b6378" letter-spacing="0.1em">
-          <text x="40" y="340" text-anchor="start">FEB 24</text>
-          <text x="260" y="340" text-anchor="middle">MAR 10</text>
-          <text x="480" y="340" text-anchor="middle">APR 03</text>
-          <text x="780" y="340" text-anchor="end">APR 24</text>
-        </g>
-      </svg>
-
-      <div class="river-legend">
-        <div class="legend-item">
-          <span class="legend-swatch" style="background: var(--gold)"></span>
-          <span>Median projection</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-swatch" style="background: rgba(201, 168, 87, 0.3); height:8px;"></span>
-          <span>P25–P75 band</span>
-        </div>
-        <div class="legend-item" style="margin-left: auto;">
-          <span class="live-badge"><span class="live-dot"></span>Live</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STAT RIBBON -->
-<section class="ribbon">
-  <div class="container ribbon-grid">
-    <div class="ribbon-cell">
-      <div class="ribbon-num">525<em>+</em></div>
-      <div class="ribbon-label">Personas with memory</div>
-    </div>
-    <div class="ribbon-cell">
-      <div class="ribbon-num">32</div>
-      <div class="ribbon-label">War rooms · live debate</div>
-    </div>
-    <div class="ribbon-cell">
-      <div class="ribbon-num">50<em>d</em></div>
-      <div class="ribbon-label">Combine → draft window</div>
-    </div>
-    <div class="ribbon-cell">
-      <div class="ribbon-num">10<em>k</em></div>
-      <div class="ribbon-label">Parallel boards · per cascade</div>
-    </div>
-  </div>
-</section>
-
-<!-- CAPABILITIES -->
-<section class="capabilities">
-  <div class="container">
-    <div class="section-header">
-      <div>
-        <div class="section-eyebrow">— Three Surfaces</div>
-        <h2 class="section-title">What the swarm <em>tells you</em><br>that nobody else can.</h2>
-      </div>
-      <div class="section-meta">
-        I — Divergence<br>II — Pockets<br>III — Telegraphy
-      </div>
-    </div>
-
-    <div class="cap-grid">
-      <!-- Large tile: Divergence Matrix -->
-      <div class="cap-tile large">
-        <div class="cap-num">I — Divergence Matrix</div>
-        <h3 class="cap-title">Find the prospects the league can't agree on.</h3>
-        <p class="cap-body">
-          Every war room runs its own argument. Persona memory means BUF's scheme bias shows up; KC's recency curve shows up; PHI's medical-conservatism shows up. The matrix surfaces the cells where one room is thirty slots out of step with the league. Those are the trade-up targets. Those are the picks that surprise on draft night — only because no one else simulated the room.
-        </p>
-        <div class="cap-viz">
-          <div class="div-matrix">
-            <span class="div-matrix-label">McMillan, T.</span>
-            <div class="div-cells" id="row-mcmillan"></div>
-          </div>
-          <div class="div-matrix">
-            <span class="div-matrix-label">Hunter, T.</span>
-            <div class="div-cells" id="row-hunter"></div>
-          </div>
-          <div class="div-matrix">
-            <span class="div-matrix-label">Ward, C.</span>
-            <div class="div-cells" id="row-ward"></div>
-          </div>
-          <div class="div-matrix">
-            <span class="div-matrix-label">Walker, M.</span>
-            <div class="div-cells" id="row-walker"></div>
-          </div>
-          <div class="div-matrix">
-            <span class="div-matrix-label">Loveland, C.</span>
-            <div class="div-cells" id="row-loveland"></div>
-          </div>
-          <div class="div-matrix">
-            <span class="div-matrix-label">Henderson, T.</span>
-            <div class="div-cells" id="row-henderson"></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-dim); letter-spacing: 0.14em; text-transform: uppercase;">
-            <span>NYJ</span>
-            <span>TEAMS, REVERSE DRAFT ORDER →</span>
-            <span>KC</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Value pockets -->
-      <div class="cap-tile">
-        <div class="cap-num">II — Value Pockets</div>
-        <h3 class="cap-title">Where the market is mispricing risk.</h3>
-        <p class="cap-body">
-          Public consensus is a one-room model. The simulated league is thirty-two. When a prospect shows up in the swarm a round earlier than the consensus board, that's a pocket — and it's the one number aggregate sites can't compute, because it requires running the rooms.
-        </p>
-        <div class="cap-viz pocket-viz">
-          <div class="pocket-row">
-            <span class="pocket-name">Egbuka, E.</span>
-            <span class="pocket-spread">Δ +18 slots</span>
-            <span class="pocket-confidence">94%</span>
-          </div>
-          <div class="pocket-row">
-            <span class="pocket-name">Banks, K.</span>
-            <span class="pocket-spread">Δ +12 slots</span>
-            <span class="pocket-confidence">89%</span>
-          </div>
-          <div class="pocket-row">
-            <span class="pocket-name">Williams, Q.</span>
-            <span class="pocket-spread">Δ –9 slots</span>
-            <span class="pocket-confidence">82%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Trade-up telegraphy -->
-      <div class="cap-tile">
-        <div class="cap-num">III — Trade-Up Telegraphy</div>
-        <h3 class="cap-title">Predict the moves before they happen.</h3>
-        <p class="cap-body">
-          GMs in the sim negotiate trades the way real GMs do — agent-to-agent, value chart in hand, owner pressure ticking. When a high-conviction team sits behind a soft one, you see the deal forming weeks early, with a probability that updates every time the room re-prices.
-        </p>
-        <div class="cap-viz tradeup-viz">
-          <div class="tradeup-row">
-            <span style="color: var(--ink);">PHI #16</span>
-            <div class="tradeup-bar"><div class="tradeup-fill" style="width: 78%;"></div></div>
-            <span style="color: var(--gold);">→ #9</span>
-          </div>
-          <div class="tradeup-row">
-            <span style="color: var(--ink);">SF #11</span>
-            <div class="tradeup-bar"><div class="tradeup-fill" style="width: 64%;"></div></div>
-            <span style="color: var(--gold);">→ #5</span>
-          </div>
-          <div class="tradeup-row">
-            <span style="color: var(--ink);">PIT #21</span>
-            <div class="tradeup-bar"><div class="tradeup-fill" style="width: 51%;"></div></div>
-            <span style="color: var(--gold);">→ #14</span>
-          </div>
-          <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-dim); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 12px;">
-            P(move) by team · live
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- LIVE TICKER -->
-<section class="ticker-section">
-  <div class="container">
-    <div class="ticker-grid">
-      <div>
-        <div class="section-eyebrow" style="margin-bottom: 16px;">— Pick a what-if. Watch the room react.</div>
-        <h2 class="section-title" style="margin-bottom: 28px;">A petri dish for <em>every scenario</em><br>that keeps GMs up at night.</h2>
-        <p style="color: var(--ink-mute); font-size: 16px; line-height: 1.65; margin-bottom: 18px; max-width: 460px;">
-          Drop a perturbation — a 4.32 forty, a failed medical, a Friday character leak, an owner who wants a name — and the swarm plays it out. The forty hits a beat writer; the beat writer hits Twitter; four GMs reweight; position coaches push back; an agent leaks a counter; six boards mutate.
-        </p>
-        <p style="color: var(--ink-mute); font-size: 16px; line-height: 1.65; max-width: 460px;">
-          You don't get a number. You get the trends, the concerns, the second-order reactions teams would have been blind to — surfaced before the event itself happens.
-        </p>
-      </div>
-
-      <div class="ticker-stream">
-        <div class="ticker-head">
-          <div class="ticker-head-title">Event Stream</div>
-          <span class="live-badge"><span class="live-dot"></span>Combine Day 2</span>
-        </div>
-        <div class="ticker-feed">
-          <div class="ticker-row">
-            <span class="ticker-time">14:42:08</span>
-            <span class="ticker-event"><span class="player">Mason, J.</span> ran 4.34 — board variance <span class="delta">+62%</span> (was 4.51 projected)</span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:38:51</span>
-            <span class="ticker-event">SF rank shift on <span class="player">Hunter, T.</span>: <span class="delta-pos">+11</span> following private workout signal</span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:31:17</span>
-            <span class="ticker-event">Position scarcity at WR1 tightens — six teams converge top-12 (was four)</span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:25:02</span>
-            <span class="ticker-event"><span class="player">Walker, M.</span> medical re-cleared — <span class="delta-pos">+7 slots</span> across AFC North boards</span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:18:44</span>
-            <span class="ticker-event">PHI–DAL trade-up correlation flagged: P(move into top-10) <span class="delta-pos">68%</span></span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:11:30</span>
-            <span class="ticker-event"><span class="player">Banks, K.</span> 36" vert — value pocket detected, <span class="delta">Δ +14 vs market</span></span>
-          </div>
-          <div class="ticker-row">
-            <span class="ticker-time">14:04:55</span>
-            <span class="ticker-event">League-wide RB consensus drift: -2 slots avg post-Day-1 results</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- AGENT NETWORK -->
-<section class="agents-section">
-  <div class="container agents-grid">
+  <div class="hero-grid">
     <div>
-      <svg class="agents-svg" viewBox="0 0 600 480" xmlns="http://www.w3.org/2000/svg" aria-label="Agent network preview">
-        <defs>
-          <radialGradient id="teamGlow">
-            <stop offset="0%" stop-color="#c9a857" stop-opacity="0.15"/>
-            <stop offset="100%" stop-color="#c9a857" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="mediaGlow">
-            <stop offset="0%" stop-color="#e8654d" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#e8654d" stop-opacity="0"/>
-          </radialGradient>
-        </defs>
-
-        <!-- Connection lines (will be JS) -->
-        <g id="agent-edges" stroke="#2a3142" stroke-width="0.4" opacity="0.5" fill="none"></g>
-
-        <!-- Team clusters (will be JS) -->
-        <g id="agent-nodes"></g>
-
-        <!-- Center: media/market -->
-        <circle cx="300" cy="240" r="60" fill="url(#mediaGlow)"/>
-        <circle cx="300" cy="240" r="14" fill="#1d2230" stroke="#e8654d" stroke-width="1.5"/>
-        <text x="300" y="244" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#e8654d" letter-spacing="0.15em">MEDIA</text>
-      </svg>
+      <div class="hero-eyebrow">DRO // Field Brief 06 May 2026 // Internal Preview v0.4 — Agency Confidential</div>
+      <h1>
+        Behavioral <em>load-testing</em> for the front office.
+        <span class="small">A simulation sandbox where 184 multi-agent personas — rival GMs, beat writers, agent reps, fan bases — run your draft board through ten thousand parallel realities before a single pick is on the clock.</span>
+      </h1>
     </div>
+    <aside class="hero-meta">
+      <p class="pull">"Your data tells you what a player <em>is</em>. Mirofish tells you how the room is going to behave when he slides."</p>
+      <p>Seeded by your proprietary scouting reports, Combine biometrics, transfer-market profiles, and historical board tendencies — every agent in the sim carries a signature: risk tolerance, positional bias, owner pressure, contract leverage, public-relations gravity.</p>
+      <p><b>Inject a variable</b> — a medical flag at the eleventh hour, a surprise bid from the Saudi window, a Twitter leak from a rival's war room — and watch the cascade through the front office, the press box, and the fan stream.</p>
+    </aside>
+  </div>
 
-    <div class="agents-copy" id="how">
-      <div class="section-eyebrow" style="margin-bottom: 16px;">— Built on MiroFish · tuned for the draft</div>
-      <h3>The general-purpose swarm engine, <em>pointed at the room.</em></h3>
-      <p class="drop-cap">
-        MiroFish is a multi-agent simulation engine that builds a parallel digital world from real-world signals, populates it with persona-driven agents, and lets the future rehearse itself. DRO is the version that knows the NFL draft.
-      </p>
-      <p style="margin-top: 18px; color: var(--ink-mute); font-size: 14.5px; line-height: 1.7;">
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Persona generation</span> &nbsp;→&nbsp; 525 named decision-makers — GMs, area scouts, position coaches, analytics directors, owners, beat writers, certified agents — each with a scheme bias, recency curve, risk tolerance, and a comp-set memory mined from a decade of that team's actual picks.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">GraphRAG knowledge graph</span> &nbsp;→&nbsp; every prospect's tape, medical, character flags, scheme fit, agency, contract leverage; every team's needs, cap room, draft capital, prior trade partners, ownership patience.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Reality seed extraction</span> &nbsp;→&nbsp; continuous ingest of combine, pro days, top-30 visits, beat-writer leaks, mocks, market lines.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Parallel simulation</span> &nbsp;→&nbsp; ten thousand full first rounds run side-by-side — each one a different sequence of leaks, debates, owner overrides, and trade-ups.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Dynamic temporal memory</span> &nbsp;→&nbsp; boards mutate as picks land. When CHI takes Mason at one, twenty other rooms re-rank. DRO watches the cascade.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Counterfactual sandbox</span> &nbsp;→&nbsp; queue dozens of "what if" perturbations and run them in parallel. What if QB1 fails his medical? What if a top-5 GM is fired draft week? Each dish surfaces the trends, hidden risks, and second-order reactions that teams running a single timeline would never see.<br><br>
-        <span style="color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">Deep interaction</span> &nbsp;→&nbsp; ask any simulated GM why he passed. Ask the swarm what flips Walker into the top-five. The model talks back.
-      </p>
-      <p style="color: var(--ink); margin-top: 26px; font-size: 18px;">
-        <span style="color: var(--gold); font-family: 'Fraunces', serif; font-style: italic;">A draft board doesn't form.</span> It's negotiated. DRO models the negotiation.
-      </p>
+  <div class="scenario">
+    <div class="scenario-label">
+      ACTIVE SCENARIO
+      <b>Round 1 // 26 — Greenwood Stadium, Dallas</b>
+    </div>
+    <div class="pills">
+      <span class="pill live">NFL DRAFT 2026 · R1</span>
+      <span class="pill">NFL Draft · R2-R3</span>
+      <span class="pill">MLS Summer Window</span>
+      <span class="pill">UEFA Jan Window</span>
+      <span class="pill">Combine Re-Pricing</span>
+      <span class="pill">Free-Agency 72hr</span>
+      <span class="pill">Trade-Deadline Sandbox</span>
+    </div>
+    <div class="scenario-cta">
+      Branches resolved &nbsp;<b>4,127 / 10,000</b>
     </div>
   </div>
 </section>
 
-<!-- PULL QUOTE -->
-<section class="quote-section">
-  <div class="container">
-    <div class="quote">
-      <div class="quote-mark">"</div>
-      <div class="quote-text">
-        Other platforms hand you a number. DRO hands you the <em>argument that produced it</em> — the room, the leak, the owner override, the thirty-one boards that disagreed.
+<!-- ======================== COMMAND DECK ======================== -->
+<section class="section">
+  <div class="section-head">
+    <div>
+      <span class="index">SECTION 01 // COMMAND DECK</span>
+      <h2>The room, the clock, and <em>every other room</em> in the league.</h2>
+    </div>
+    <div class="meta">
+      Pick&nbsp;<b>07</b>&nbsp;on the clock<br/>
+      <b>4,127</b> branches converged<br/>
+      Mean confidence&nbsp;<b>0.71</b>
+    </div>
+  </div>
+
+  <div class="deck">
+
+    <!-- LEFT: VARIABLE INJECTION -->
+    <div class="panel injector">
+      <div class="panel-head">
+        <span><span class="pulse mt"></span> &nbsp;INJECTION LAB</span>
+        <span class="tag">CTRL · 03</span>
       </div>
-      <div class="quote-attr">— Method note · v0.1</div>
+      <div class="panel-body">
+        <h3>What if the night turns sideways?</h3>
+        <p>Inject behavioral shocks into the live sim. Mirofish re-resolves all downstream agent decisions in roughly 4.2s per branch.</p>
+
+        <div class="inj-row">
+          <div class="label">
+            Medical Flag · Tier 4
+            <small>Stress reaction surfaces at the late-night re-check</small>
+          </div>
+          <div class="inj-toggle on"></div>
+          <div class="inj-slider">
+            <div class="slider-track">
+              <div class="slider-fill" style="width: 78%"></div>
+              <div class="slider-knob" style="left: 78%"></div>
+            </div>
+            <div class="slider-val">SEVERITY 78</div>
+          </div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            Leak from Rival War Room
+            <small>Source = NYJ scouting intern, 23:14 ET</small>
+          </div>
+          <div class="inj-toggle on"></div>
+          <div class="inj-slider">
+            <div class="slider-track">
+              <div class="slider-fill" style="width: 42%; background: var(--gold);"></div>
+              <div class="slider-knob" style="left: 42%; box-shadow: 0 0 0 4px rgba(212,178,84,0.18);"></div>
+            </div>
+            <div class="slider-val gd">REACH 0.42</div>
+          </div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            Surprise Trade Offer · Pick 04
+            <small>NE → CLE, Future 1st + Day 2 swap</small>
+          </div>
+          <div class="inj-toggle"></div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            Workout Bombshell
+            <small>Pro day re-test, +0.04s 40-yard</small>
+          </div>
+          <div class="inj-toggle"></div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            Off-Field Headline
+            <small>Bar-fight TMZ video / unverified</small>
+          </div>
+          <div class="inj-toggle"></div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            Owner Mandate
+            <small>"Take the QB. Now."</small>
+          </div>
+          <div class="inj-toggle on"></div>
+          <div class="inj-slider">
+            <div class="slider-track">
+              <div class="slider-fill" style="width: 92%"></div>
+              <div class="slider-knob" style="left: 92%"></div>
+            </div>
+            <div class="slider-val">PRESSURE 92</div>
+          </div>
+        </div>
+
+        <div class="inj-row">
+          <div class="label">
+            European Bid Window Opens
+            <small>Bayer Leverkusen → MLS target J. Kessé</small>
+          </div>
+          <div class="inj-toggle"></div>
+        </div>
+      </div>
+
+      <div class="inj-foot">
+        <button class="btn">▸ Re-resolve · 5,873 Branches</button>
+        <div class="sub">Est. compute · 4m 12s · 1,184 vCPU·s</div>
+      </div>
+    </div>
+
+    <!-- CENTER: WAR ROOM -->
+    <div class="warroom">
+
+      <div class="trade-alert">
+        <span>⟁</span>
+        <b>TRADE PROPOSAL DETECTED</b> · CLE → NYG · Pick 03 for Pick 07 + 2027 R2 + R5
+        <span class="right">DETECTED IN 612 BRANCHES · 14.8%</span>
+      </div>
+
+      <div class="wr-head">
+        <h3><span class="pulse"></span> Live War Room — Pick 07</h3>
+        <div class="wr-clock">02:44<small>Time on Clock</small></div>
+        <div class="wr-pickbar">
+          ROUND 1 OF 7<br/>
+          <b>NEW YORK JETS</b> · 4–13
+        </div>
+      </div>
+
+      <div class="on-clock">
+        <div>
+          <div class="oc-team">
+            <div class="oc-helmet" style="background: linear-gradient(135deg, #0C371F 50%, #FFFFFF 50%);"></div>
+            <div class="meta">
+              <div class="pick">PICK 07 · ROUND 1</div>
+              <div class="name">New York Jets</div>
+              <div class="record">2025 Record · 4–13 · AFC East</div>
+              <div class="oc-needs">
+                <span class="need-tag hot">QB</span>
+                <span class="need-tag">EDGE</span>
+                <span class="need-tag">OT</span>
+                <span class="need-tag">CB</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="oc-deliberation">
+            <b>[GM-AGENT // GLENN-7]</b> 23:44:11 — owner pressure ↑, board collapsing.<br/>
+            <b>[VP-PERSONNEL // 03]</b> Whitfield available. Med flag is real but contained — neuro cleared in 81% of sims.<br/>
+            <b>[CAP-STRATEGIST // 02]</b> Fifth-year option math holds even at QB1 contract slot.<br/>
+            <b>[GM-AGENT // GLENN-7]</b> Phone is hot — Cleveland wants pick. Not at this number.<br/>
+            <b>[GM-AGENT // GLENN-7]</b> <span class="typing">We make the pick. Card in</span>
+          </div>
+        </div>
+
+        <div class="oc-prospect">
+          <div class="ocp-name">Cade Whitfield</div>
+          <div class="ocp-meta">QB · TEXAS · 6'4" · 224 LBS · AGE 21.4</div>
+          <div class="ocp-grid">
+            <div class="stat-cell"><div class="v">7.42<small> /10</small></div><div class="l">SCOUT GR</div></div>
+            <div class="stat-cell"><div class="v">9.14</div><div class="l">RAS</div></div>
+            <div class="stat-cell"><div class="v">81%</div><div class="l">MED CLR</div></div>
+            <div class="stat-cell"><div class="v">0.78</div><div class="l">FIT IDX</div></div>
+          </div>
+          <div class="ocp-grade">
+            <div class="grade-pill">PICK 07</div>
+            <div class="grade-meta">Mean board landing &nbsp;<b>5.3</b>&nbsp; · Std dev &nbsp;<b>2.1</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pick-list">
+
+        <div class="pick-row taken">
+          <div class="pick-num">01</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #0C2340 50%, #4B92DB 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">TENNESSEE TITANS</span>
+            <span class="pick-team-record">3–14 · AFC SOUTH</span>
+          </div>
+          <div class="pick-pos">EDGE</div>
+          <div class="pick-status lock">SELECTED</div>
+          <div class="pick-prob">M. Devereaux<br/><small>UGA</small></div>
+        </div>
+
+        <div class="pick-row taken">
+          <div class="pick-num">02</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #311D00 50%, #FF3C00 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">CLEVELAND BROWNS</span>
+            <span class="pick-team-record">3–14 · AFC NORTH</span>
+          </div>
+          <div class="pick-pos">QB</div>
+          <div class="pick-status lock">SELECTED</div>
+          <div class="pick-prob">J. Reichardt<br/><small>OSU</small></div>
+        </div>
+
+        <div class="pick-row taken">
+          <div class="pick-num">03</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #0B2265 50%, #A71930 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">NEW YORK GIANTS</span>
+            <span class="pick-team-record">4–13 · NFC EAST</span>
+          </div>
+          <div class="pick-pos">OT</div>
+          <div class="pick-status trade">↔ TRADE-DOWN</div>
+          <div class="pick-prob">S. Lindqvist<br/><small>PSU</small></div>
+        </div>
+
+        <div class="pick-row taken">
+          <div class="pick-num">04</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #002244 50%, #C60C30 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">NEW ENGLAND PATRIOTS</span>
+            <span class="pick-team-record">5–12 · AFC EAST</span>
+          </div>
+          <div class="pick-pos">WR</div>
+          <div class="pick-status lock">SELECTED</div>
+          <div class="pick-prob">T. Bass<br/><small>OSU</small></div>
+        </div>
+
+        <div class="pick-row taken">
+          <div class="pick-num">05</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #006778 50%, #D7A22A 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">JACKSONVILLE JAGUARS</span>
+            <span class="pick-team-record">5–12 · AFC SOUTH</span>
+          </div>
+          <div class="pick-pos">CB</div>
+          <div class="pick-status lock">SELECTED</div>
+          <div class="pick-prob">J. Okonkwo<br/><small>ALA</small></div>
+        </div>
+
+        <div class="pick-row taken">
+          <div class="pick-num">06</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #000000 50%, #A5ACAF 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">LAS VEGAS RAIDERS</span>
+            <span class="pick-team-record">6–11 · AFC WEST</span>
+          </div>
+          <div class="pick-pos">EDGE</div>
+          <div class="pick-status lock">SELECTED</div>
+          <div class="pick-prob">D. Achebe<br/><small>MICH</small></div>
+        </div>
+
+        <div class="pick-row live">
+          <div class="pick-num">07</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #125740 50%, #FFFFFF 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">NEW YORK JETS</span>
+            <span class="pick-team-record">4–13 · AFC EAST</span>
+          </div>
+          <div class="pick-pos">QB</div>
+          <div class="pick-status alert"><span class="pulse" style="margin-right:6px"></span>ON CLOCK</div>
+          <div class="pick-prob">C. Whitfield<br/><small>TEX · 64.3%</small></div>
+        </div>
+
+        <div class="pick-row">
+          <div class="pick-num">08</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #0085CA 50%, #101820 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">CAROLINA PANTHERS</span>
+            <span class="pick-team-record">5–12 · NFC SOUTH</span>
+          </div>
+          <div class="pick-pos">CB</div>
+          <div class="pick-status">PROJECTED</div>
+          <div class="pick-prob">R. Maddox<br/><small>CLEM · 41.0%</small></div>
+        </div>
+
+        <div class="pick-row">
+          <div class="pick-num">09</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #D3BC8D 50%, #101820 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">NEW ORLEANS SAINTS</span>
+            <span class="pick-team-record">5–12 · NFC SOUTH</span>
+          </div>
+          <div class="pick-pos">QB</div>
+          <div class="pick-status alert">SLIDE WATCH</div>
+          <div class="pick-prob">D. Rios<br/><small>MIA · 28.7%</small></div>
+        </div>
+
+        <div class="pick-row">
+          <div class="pick-num">10</div>
+          <div class="pick-helmet" style="background: linear-gradient(135deg, #0B162A 50%, #C83803 50%);"></div>
+          <div class="pick-team">
+            <span class="pick-team-name">CHICAGO BEARS</span>
+            <span class="pick-team-record">5–12 · NFC NORTH</span>
+          </div>
+          <div class="pick-pos">OT/WR</div>
+          <div class="pick-status trade">TRADE INTEREST</div>
+          <div class="pick-prob">B. Halverson<br/><small>IOWA · 33.1%</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AGENT ROSTER -->
+    <div class="agents">
+      <div class="panel-head">
+        <span><span class="pulse mt"></span> &nbsp;RIVAL FRONT-OFFICE AGENTS</span>
+        <span class="tag">31 · ACTIVE</span>
+      </div>
+
+      <div class="agent-card alert">
+        <div class="ag-avatar">RH</div>
+        <div class="ag-meta">
+          <div class="ag-name">Roman Hortiz <small>BAL · "The Trader"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">AGGRESSIVE</span>
+            <span class="ag-tag">BPA</span>
+            <span class="ag-tag">CAP-LOOSE</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:88%"></span></span><span class="v">88</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:91%"></span></span><span class="v">91</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:74%"></span></span><span class="v">74</span></div>
+          </div>
+          <div class="ag-status">→ Calling NYJ <span class="em">x4</span> in 22.8% of branches. Targeting <span class="em">QB1 Whitfield</span>.</div>
+        </div>
+      </div>
+
+      <div class="agent-card active">
+        <div class="ag-avatar">EM</div>
+        <div class="ag-meta">
+          <div class="ag-name">Eli Marston <small>NE · "The Modernist"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">ANALYTICS</span>
+            <span class="ag-tag">BPA</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:54%"></span></span><span class="v">54</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:62%"></span></span><span class="v">62</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:91%"></span></span><span class="v">91</span></div>
+          </div>
+          <div class="ag-status">→ Pick <span class="mt">complete</span>. Took <b>WR T. Bass</b> over QB consensus. Owner reportedly <span class="em">furious</span>.</div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="ag-avatar">JV</div>
+        <div class="ag-meta">
+          <div class="ag-name">Jonas Veech <small>NO · "The Survivor"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">SAFE</span>
+            <span class="ag-tag">VETERAN</span>
+            <span class="ag-tag">JOB-PRESSURE</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:24%"></span></span><span class="v">24</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:38%"></span></span><span class="v">38</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:42%"></span></span><span class="v">42</span></div>
+          </div>
+          <div class="ag-status">→ Holding pick 09. Agent sims <span class="gd">QB1 fall</span> as 41% likely. Owner alignment <b>weak</b>.</div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="ag-avatar">DA</div>
+        <div class="ag-meta">
+          <div class="ag-name">Davey Ailes <small>CHI · "The Architect"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">LONG-TERM</span>
+            <span class="ag-tag">TRENCHES</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:48%"></span></span><span class="v">48</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:71%"></span></span><span class="v">71</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:66%"></span></span><span class="v">66</span></div>
+          </div>
+          <div class="ag-status">→ Receiving 4 inbound trade calls. Most likely <span class="gd">slides back to 14</span>.</div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="ag-avatar">KP</div>
+        <div class="ag-meta">
+          <div class="ag-name">Kemal Partridge <small>CAR · "The Hawk"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">DEF-FIRST</span>
+            <span class="ag-tag">CHARACTER</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:36%"></span></span><span class="v">36</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:45%"></span></span><span class="v">45</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:38%"></span></span><span class="v">38</span></div>
+          </div>
+          <div class="ag-status">→ Locked on <b>CB Maddox</b> in 64.1% of branches. Will not entertain trade-down for QB.</div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="ag-avatar">TS</div>
+        <div class="ag-meta">
+          <div class="ag-name">Tomás Salgado <small>JAX · "The Scout"</small></div>
+          <div class="ag-tags">
+            <span class="ag-tag">FILM-FIRST</span>
+            <span class="ag-tag">ANALYTICS-SKEPTIC</span>
+          </div>
+          <div class="ag-bars">
+            <div class="ag-bar risk"><span class="l">RISK</span><span class="t"><span style="width:51%"></span></span><span class="v">51</span></div>
+            <div class="ag-bar trade"><span class="l">TRADE</span><span class="t"><span style="width:34%"></span></span><span class="v">34</span></div>
+            <div class="ag-bar bpa"><span class="l">BPA BIAS</span><span class="t"><span style="width:58%"></span></span><span class="v">58</span></div>
+          </div>
+          <div class="ag-status">→ Pick <span class="mt">complete</span>. <b>Okonkwo at 5</b> · graded as steal in 72% of branches.</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
 
-<!-- FOOTER CTA -->
-<section class="footer-cta">
-  <div class="container">
-    <h2>The 2026 Combine starts <em>February 24.</em></h2>
-    <p>Get access before the swarm goes live. Limited cohort for the first cycle.</p>
-    <div class="cta-row" style="justify-content: center;">
-      <a href="demo.html" class="btn btn-primary">
-        See the engine live
-        <span class="btn-arrow">→</span>
-      </a>
-      <a href="#" class="btn btn-ghost">
-        Request access
-      </a>
+
+<!-- ======================== PROSPECT DEEP DIVE ======================== -->
+<section class="section">
+  <div class="section-head">
+    <div>
+      <span class="index">SECTION 02 // PROSPECT INTELLIGENCE</span>
+      <h2>The man, his metrics, and <em>where the room thinks</em> he lands.</h2>
+    </div>
+    <div class="meta">
+      Subject &nbsp;<b>WHITFIELD, C.</b><br/>
+      QB · Texas · 21.4y<br/>
+      Combine pulled · <b>2026-02-28</b>
+    </div>
+  </div>
+
+  <div class="deep">
+
+    <!-- prospect hero -->
+    <div class="card prospect-hero">
+      <div class="ph-top">
+        <div class="ph-portrait"></div>
+        <div class="ph-info">
+          <div class="num">SCOUT FILE · TX-QB-26-014</div>
+          <h3>Cade <em>Whitfield</em></h3>
+          <div class="tagline">"Pocket gravity. Plus arm. Wired for the moment."</div>
+          <div class="ph-stats">
+            <div class="row"><span>Class</span><b>RS Junior</b></div>
+            <div class="row"><span>Hometown</span><b>Sugar Land, TX</b></div>
+            <div class="row"><span>Hand size</span><b>10⅛"</b></div>
+            <div class="row"><span>Arm length</span><b>32⅞"</b></div>
+            <div class="row"><span>Wonderlic</span><b>34</b></div>
+            <div class="row"><span>S2 Cog.</span><b>97%ile</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ph-combine">
+        <div class="ph-combine-head">
+          <h4>Combine 2026</h4>
+          <span>INDIANAPOLIS · LUCAS OIL</span>
+        </div>
+        <div class="combine-grid">
+          <div class="combine-stat">
+            <div class="v">4.62<sup>s</sup></div>
+            <div class="l">40 YD</div>
+            <div class="pct">88th percentile · QB</div>
+          </div>
+          <div class="combine-stat">
+            <div class="v">34.5<sup>"</sup></div>
+            <div class="l">VERTICAL</div>
+            <div class="pct">76th</div>
+          </div>
+          <div class="combine-stat">
+            <div class="v">120<sup>"</sup></div>
+            <div class="l">BROAD</div>
+            <div class="pct">81st</div>
+          </div>
+          <div class="combine-stat">
+            <div class="v">6.81<sup>s</sup></div>
+            <div class="l">3-CONE</div>
+            <div class="pct">71st</div>
+          </div>
+          <div class="combine-stat">
+            <div class="v">59<sup>mph</sup></div>
+            <div class="l">VEL · MAX</div>
+            <div class="pct">94th</div>
+          </div>
+          <div class="combine-stat">
+            <div class="v">9.14</div>
+            <div class="l">RAS</div>
+            <div class="pct">elite tier</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- radar / scouting grade -->
+    <div class="card radar-card">
+      <h3>Scouting Grade · 8-Trait</h3>
+      <div class="sub">SOLID LINE · WHITFIELD &nbsp; · &nbsp; DASHED · POSITIONAL MEAN (R1 QB)</div>
+
+      <div class="radar-wrap">
+        <svg viewBox="-120 -120 240 240" width="100%" height="280" aria-hidden="true">
+          <!-- grid rings -->
+          <g fill="none" stroke="#2A2E3C" stroke-width="0.5">
+            <polygon points="0,-100 70.7,-70.7 100,0 70.7,70.7 0,100 -70.7,70.7 -100,0 -70.7,-70.7"/>
+            <polygon points="0,-75 53,-53 75,0 53,53 0,75 -53,53 -75,0 -53,-53"/>
+            <polygon points="0,-50 35.4,-35.4 50,0 35.4,35.4 0,50 -35.4,35.4 -50,0 -35.4,-35.4"/>
+            <polygon points="0,-25 17.7,-17.7 25,0 17.7,17.7 0,25 -17.7,17.7 -25,0 -17.7,-17.7"/>
+          </g>
+          <!-- axes -->
+          <g stroke="#2A2E3C" stroke-width="0.5">
+            <line x1="0" y1="0" x2="0" y2="-100"/>
+            <line x1="0" y1="0" x2="70.7" y2="-70.7"/>
+            <line x1="0" y1="0" x2="100" y2="0"/>
+            <line x1="0" y1="0" x2="70.7" y2="70.7"/>
+            <line x1="0" y1="0" x2="0" y2="100"/>
+            <line x1="0" y1="0" x2="-70.7" y2="70.7"/>
+            <line x1="0" y1="0" x2="-100" y2="0"/>
+            <line x1="0" y1="0" x2="-70.7" y2="-70.7"/>
+          </g>
+
+          <!-- mean polygon -->
+          <polygon
+            points="0,-65 46,-46 70,0 46,46 0,55 -42,42 -55,0 -50,-50"
+            fill="rgba(125,249,201,0.06)"
+            stroke="#7DF9C9" stroke-width="1" stroke-dasharray="3 3" opacity="0.9"/>
+
+          <!-- whitfield polygon -->
+          <polygon
+            points="0,-92 60,-60 88,0 50,50 0,68 -55,55 -78,0 -55,-55"
+            fill="rgba(255,91,20,0.20)"
+            stroke="#FF5B14" stroke-width="2"/>
+
+          <!-- nodes -->
+          <g fill="#FF5B14">
+            <circle cx="0" cy="-92" r="3"/>
+            <circle cx="60" cy="-60" r="3"/>
+            <circle cx="88" cy="0" r="3"/>
+            <circle cx="50" cy="50" r="3"/>
+            <circle cx="0" cy="68" r="3"/>
+            <circle cx="-55" cy="55" r="3"/>
+            <circle cx="-78" cy="0" r="3"/>
+            <circle cx="-55" cy="-55" r="3"/>
+          </g>
+
+          <!-- labels -->
+          <g font-family="JetBrains Mono" font-size="8" fill="#D9D2C2" letter-spacing="1">
+            <text x="0" y="-108" text-anchor="middle">ARM TALENT</text>
+            <text x="80" y="-78" text-anchor="middle">ACCURACY</text>
+            <text x="112" y="3" text-anchor="start">PROCESSING</text>
+            <text x="80" y="62" text-anchor="middle">POCKET</text>
+            <text x="0" y="118" text-anchor="middle">MOBILITY</text>
+            <text x="-80" y="62" text-anchor="middle">DECISION</text>
+            <text x="-112" y="3" text-anchor="end">LEADERSHIP</text>
+            <text x="-80" y="-78" text-anchor="middle">CHARACTER</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="radar-legend">
+        <div class="item"><span class="swatch c1"></span> WHITFIELD · 7.42</div>
+        <div class="item"><span class="swatch c2"></span> R1 QB MEAN · 6.81</div>
+        <div class="item"><span class="swatch" style="background:transparent;border:1px solid var(--ember-deep)"></span> 1.0σ above mean</div>
+        <div class="item"><span class="swatch" style="background:transparent;border:1px solid var(--mute-2)"></span> Med flag pending</div>
+      </div>
+    </div>
+
+    <!-- distribution -->
+    <div class="card dist-card">
+      <h3>Where He Lands · 10,000 Sims</h3>
+      <div class="sub">PROBABILITY DISTRIBUTION · DRAFT PICK · MEAN 5.32 / STD 2.14</div>
+
+      <div class="dist-row">
+        <div class="dist-pick">01</div>
+        <div class="dist-team">TENNESSEE</div>
+        <div class="dist-bar muted"><span style="width:6%"></span></div>
+        <div class="dist-pct">2.4%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">02</div>
+        <div class="dist-team">CLEVELAND</div>
+        <div class="dist-bar"><span style="width:62%"></span></div>
+        <div class="dist-pct">22.8%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">03</div>
+        <div class="dist-team">NY GIANTS</div>
+        <div class="dist-bar"><span style="width:38%"></span></div>
+        <div class="dist-pct">14.0%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">04</div>
+        <div class="dist-team">NEW ENGLAND</div>
+        <div class="dist-bar muted"><span style="width:18%"></span></div>
+        <div class="dist-pct">6.7%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">05</div>
+        <div class="dist-team">JACKSONVILLE</div>
+        <div class="dist-bar muted"><span style="width:12%"></span></div>
+        <div class="dist-pct">4.4%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">06</div>
+        <div class="dist-team">LAS VEGAS</div>
+        <div class="dist-bar muted"><span style="width:11%"></span></div>
+        <div class="dist-pct">4.0%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">07</div>
+        <div class="dist-team">NY JETS</div>
+        <div class="dist-bar win"><span style="width:96%"></span></div>
+        <div class="dist-pct">35.4%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">08</div>
+        <div class="dist-team">CAROLINA</div>
+        <div class="dist-bar muted"><span style="width:8%"></span></div>
+        <div class="dist-pct">3.0%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">09</div>
+        <div class="dist-team">NEW ORLEANS</div>
+        <div class="dist-bar muted"><span style="width:14%"></span></div>
+        <div class="dist-pct">5.1%</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-pick">10+</div>
+        <div class="dist-team">SLIDE</div>
+        <div class="dist-bar muted"><span style="width:6%"></span></div>
+        <div class="dist-pct">2.2%</div>
+      </div>
+
+      <div class="dist-foot">
+        <div class="cell">
+          <div class="v"><em>5.3</em></div>
+          <div class="l">Mean Pick</div>
+        </div>
+        <div class="cell">
+          <div class="v"><em>2.1</em></div>
+          <div class="l">Std Dev</div>
+        </div>
+        <div class="cell">
+          <div class="v"><em>92%</em></div>
+          <div class="l">R1 Confidence</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="container footer-inner">
-    <div>DRO · Iowa City · 2026</div>
-    <div>Powered by <a href="https://github.com/666ghj/MiroFish" style="color: var(--gold); text-decoration: none;">MiroFish</a> · Method · Privacy · Disclosures</div>
+
+<!-- ======================== INSIDE THE SIM ======================== -->
+<section class="section">
+  <div class="section-head">
+    <div>
+      <span class="index">SECTION 03 // INSIDE THE SIMULATION</span>
+      <h2>How <em>1,184 personas</em> turn one pick into ten thousand reactions.</h2>
+    </div>
+    <div class="meta">
+      Persona library&nbsp;<b>1,184</b><br/>
+      Active in this scenario&nbsp;<b>184</b><br/>
+      Cross-reactions / branch&nbsp;<b>~412</b>
+    </div>
+  </div>
+
+  <!-- INTRO + LIFECYCLE FLOW -->
+  <div class="sim-intro">
+    <div class="copy">
+      <h3>Each branch is a <em>cast call</em>, a clock, and a closed loop.</h3>
+      <p>When DRO opens a scenario, Mirofish instantiates a curated cast of personas — drawn from a 1,184-deep library of fitted profiles built on a decade of public posting history, voting records, draft-night quotes, and beat-by-beat reaction data. Each persona carries its own <b>tone, posting cadence, source network, bias dials, and platform-native voice</b>.</p>
+      <p>An event fires. Personas <b>observe</b> what's relevant to them, <b>post in character</b>, then <b>read each other</b> and update their priors. Aggregate signals (sentiment, narrative dominance, topic volume) feed back into rival GM agents — who incorporate the room's reaction into their next decision. Then the cycle repeats.</p>
+    </div>
+    <div class="flowchain">
+      <div class="step"><span class="n">01</span><span>Seed data ingested · scout reports, biometrics, GM histories</span><span class="v">nightly</span></div>
+      <div class="arrow">▼</div>
+      <div class="step"><span class="n">02</span><span>Persona library fitted from public history</span><span class="v">offline</span></div>
+      <div class="arrow">▼</div>
+      <div class="step"><span class="n">03</span><span>Scenario opens · 184 instances cast for this branch</span><span class="v">t=0</span></div>
+      <div class="arrow">▼</div>
+      <div class="step"><span class="n">04</span><span>Event fires · personas post in-character across channels</span><span class="v">+0–60s</span></div>
+      <div class="arrow">▼</div>
+      <div class="step"><span class="n">05</span><span>Cross-influence · each persona reads & reacts</span><span class="v">+1–10m</span></div>
+      <div class="arrow">▼</div>
+      <div class="step return"><span class="n">06</span><span>Signals roll up · GM agents update boards · loop repeats</span><span class="v">+10m+</span></div>
+    </div>
+  </div>
+
+
+  <!-- THE CAST -->
+  <div class="subhead">
+    The Cast · Six of 184 personas active in this branch
+    <small>FILTER · NYJ DIVISION · POST-PICK 07 · 23:47–23:59 ET</small>
+  </div>
+
+  <div class="cast-grid">
+
+    <div class="persona" data-platform="X / TWITTER">
+      <div class="p-head">
+        <div class="p-avatar round">BF</div>
+        <div class="p-meta">
+          <div class="name">Brent Fowler</div>
+          <div class="handle">@fowler_breaking</div>
+        </div>
+      </div>
+      <div class="p-arch">NATIONAL <b>INSIDER</b> · BREAKING</div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">1.2M<small> flw</small></div><div class="l">Reach</div></div>
+        <div class="p-stat"><div class="v">4.1<small>/hr</small></div><div class="l">Cadence</div></div>
+        <div class="p-stat"><div class="v">0.91</div><div class="l">Trust idx</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row hi"><span class="l">Speed-to-post</span><span class="t"><span style="width:94%"></span></span><span class="v">94</span></div>
+        <div class="row hi"><span class="l">Sourcing</span><span class="t"><span style="width:88%"></span></span><span class="v">88</span></div>
+        <div class="row"><span class="l">Hot-take</span><span class="t"><span style="width:42%"></span></span><span class="v">42</span></div>
+        <div class="row"><span class="l">Skepticism</span><span class="t"><span style="width:28%"></span></span><span class="v">28</span></div>
+      </div>
+      <div class="p-sample">
+        Sources tell me the <em>Jets are taking Whitfield</em> at 7. Owner pressure was the deciding factor. Cleveland called late but the price was 3 + a future 1.
+      </div>
+    </div>
+
+    <div class="persona" data-platform="X / TWITTER">
+      <div class="p-head">
+        <div class="p-avatar round">KL</div>
+        <div class="p-meta">
+          <div class="name">Kavi Lange</div>
+          <div class="handle">@kavi_films</div>
+        </div>
+      </div>
+      <div class="p-arch">FILM ANALYST · <b>SKEPTIC</b></div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">88K<small> flw</small></div><div class="l">Reach</div></div>
+        <div class="p-stat"><div class="v">1.2<small>/hr</small></div><div class="l">Cadence</div></div>
+        <div class="p-stat"><div class="v">0.78</div><div class="l">Trust idx</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row mt"><span class="l">Tape-first</span><span class="t"><span style="width:96%"></span></span><span class="v">96</span></div>
+        <div class="row hi"><span class="l">Contrarian</span><span class="t"><span style="width:81%"></span></span><span class="v">81</span></div>
+        <div class="row"><span class="l">Patience</span><span class="t"><span style="width:74%"></span></span><span class="v">74</span></div>
+        <div class="row"><span class="l">Speed-to-post</span><span class="t"><span style="width:30%"></span></span><span class="v">30</span></div>
+      </div>
+      <div class="p-sample">
+        If you watched the <b>Texas–Bama tape</b> and you're surprised Whitfield is going top-10, you're scouting the player you wanted, not the player on screen.
+      </div>
+    </div>
+
+    <div class="persona" data-platform="REDDIT">
+      <div class="p-head">
+        <div class="p-avatar">J8</div>
+        <div class="p-meta">
+          <div class="name">JetsTilIDie_84</div>
+          <div class="handle">u/JetsTilIDie_84 · 12y · MOD</div>
+        </div>
+      </div>
+      <div class="p-arch">r/nyjets · <b>LIFER FAN</b> · MEGATHREAD MOD</div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">214K<small> kar</small></div><div class="l">Karma</div></div>
+        <div class="p-stat"><div class="v">38<small>/day</small></div><div class="l">Posts</div></div>
+        <div class="p-stat"><div class="v">0.62</div><div class="l">Mood</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row hi"><span class="l">Loyalty</span><span class="t"><span style="width:99%"></span></span><span class="v">99</span></div>
+        <div class="row gd"><span class="l">Pessimism</span><span class="t"><span style="width:64%"></span></span><span class="v">64</span></div>
+        <div class="row mt"><span class="l">Hopium</span><span class="t"><span style="width:88%"></span></span><span class="v">88</span></div>
+        <div class="row"><span class="l">Receipts</span><span class="t"><span style="width:71%"></span></span><span class="v">71</span></div>
+      </div>
+      <div class="p-sample">
+        <b>MEGATHREAD: PICK 7 — WE GOT OUR GUY 🟢⚪</b>&nbsp; OK before anyone says "medical concerns" — the front office <em>knows</em>. They have access to data we don't. <em>I am locked in.</em>
+      </div>
+    </div>
+
+    <div class="persona" data-platform="SPORTS RADIO">
+      <div class="p-head">
+        <div class="p-avatar round">MB</div>
+        <div class="p-meta">
+          <div class="name">Mike from Bayonne</div>
+          <div class="handle">WFAN · regular caller · 14y</div>
+        </div>
+      </div>
+      <div class="p-arch">RADIO · <b>LIFER FAN</b> · EMOTIONAL CORE</div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">2.3<small>/wk</small></div><div class="l">On-air</div></div>
+        <div class="p-stat"><div class="v">9:14</div><div class="l">Avg seg</div></div>
+        <div class="p-stat"><div class="v">0.41</div><div class="l">Mood</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row hi"><span class="l">Emotion</span><span class="t"><span style="width:97%"></span></span><span class="v">97</span></div>
+        <div class="row gd"><span class="l">Long memory</span><span class="t"><span style="width:91%"></span></span><span class="v">91</span></div>
+        <div class="row hi"><span class="l">Pessimism</span><span class="t"><span style="width:78%"></span></span><span class="v">78</span></div>
+        <div class="row"><span class="l">Forgiveness</span><span class="t"><span style="width:22%"></span></span><span class="v">22</span></div>
+      </div>
+      <div class="p-sample">
+        Mike, I been waitin' since '<em>09</em> for a quarterback. <em>Nine. Years.</em> If this kid's medical is bad I swear to God I'm done. <em>Done</em>, Mike. I'm done.
+      </div>
+    </div>
+
+    <div class="persona" data-platform="X / TWITTER">
+      <div class="p-head">
+        <div class="p-avatar round">CH</div>
+        <div class="p-meta">
+          <div class="name">Carl Henderson</div>
+          <div class="handle">@coachcarl_xs</div>
+        </div>
+      </div>
+      <div class="p-arch">EX-PLAYER · <b>PUNDIT</b> · QB-BROTHERHOOD</div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">220K<small> flw</small></div><div class="l">Reach</div></div>
+        <div class="p-stat"><div class="v">2.4<small>/hr</small></div><div class="l">Cadence</div></div>
+        <div class="p-stat"><div class="v">0.71</div><div class="l">Trust idx</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row hi"><span class="l">Locker-room</span><span class="t"><span style="width:92%"></span></span><span class="v">92</span></div>
+        <div class="row gd"><span class="l">QB-empathy</span><span class="t"><span style="width:97%"></span></span><span class="v">97</span></div>
+        <div class="row hi"><span class="l">Moral take</span><span class="t"><span style="width:84%"></span></span><span class="v">84</span></div>
+        <div class="row"><span class="l">Analytics</span><span class="t"><span style="width:18%"></span></span><span class="v">18</span></div>
+      </div>
+      <div class="p-sample">
+        Y'all keep talking about the medical. Talk to me about the <em>kid</em>. I watched him on tape — that's a <em>man</em> in the pocket. Jets just got their <em>franchise</em>.
+      </div>
+    </div>
+
+    <div class="persona" data-platform="DISCORD / FORUM">
+      <div class="p-head">
+        <div class="p-avatar">SV</div>
+        <div class="p-meta">
+          <div class="name">Sherri Vázquez</div>
+          <div class="handle">@sherri_jets · NYP beat</div>
+        </div>
+      </div>
+      <div class="p-arch">LOCAL <b>BEAT WRITER</b> · BUILDING ACCESS</div>
+      <div class="p-stats">
+        <div class="p-stat"><div class="v">95K<small> flw</small></div><div class="l">Reach</div></div>
+        <div class="p-stat"><div class="v">2.8<small>/hr</small></div><div class="l">Cadence</div></div>
+        <div class="p-stat"><div class="v">0.84</div><div class="l">Trust idx</div></div>
+      </div>
+      <div class="p-bias">
+        <div class="row mt"><span class="l">Building access</span><span class="t"><span style="width:90%"></span></span><span class="v">90</span></div>
+        <div class="row hi"><span class="l">Skepticism</span><span class="t"><span style="width:66%"></span></span><span class="v">66</span></div>
+        <div class="row"><span class="l">Hot-take</span><span class="t"><span style="width:38%"></span></span><span class="v">38</span></div>
+        <div class="row gd"><span class="l">Source loyalty</span><span class="t"><span style="width:81%"></span></span><span class="v">81</span></div>
+      </div>
+      <div class="p-sample">
+        Inside the room: when the medical leaked, two scouts argued for the trade-down. Veatch overruled them. <em>"We're picking the franchise."</em> Per my source.
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- THE CASCADE -->
+  <div class="subhead">
+    The Cascade · Pick 07 → first 12 minutes
+    <small>SINGLE BRANCH · ID #4127 · 312 PERSONA POSTS LOGGED</small>
+  </div>
+
+  <div class="cascade">
+    <div class="cascade-head">
+      <h4><span class="pulse"></span>&nbsp;Real-time propagation map</h4>
+      <div class="meta">
+        ORIGIN <b>23:47:08 ET</b> · LAST EVENT <b>23:59:14 ET</b> · 312 POSTS · 11 REACTION CLUSTERS
+      </div>
+    </div>
+    <div class="lane-key">
+      <span><span class="dot" style="background:var(--ember)"></span> EVENT</span>
+      <span><span class="dot" style="background:var(--ember)"></span> INSIDER</span>
+      <span><span class="dot" style="background:var(--azure)"></span> BEAT</span>
+      <span><span class="dot" style="background:var(--mint)"></span> FAN</span>
+      <span><span class="dot" style="background:var(--gold)"></span> RADIO</span>
+      <span><span class="dot" style="background:var(--paper)"></span> RIVAL GM</span>
+      <span><span class="dot" style="background:var(--paper-2)"></span> NATIONAL MEDIA</span>
+      <span><span class="dot" style="background:var(--ember); border:1px dashed"></span> MEME / VIRAL</span>
+    </div>
+
+    <!-- T+0 EVENT -->
+    <div class="casc-row event">
+      <div class="casc-time">T+00:00<small>23:47:08 ET</small></div>
+      <div class="casc-lane event">▸ EVENT</div>
+      <div class="casc-body">
+        <div class="who">Pick 07 · New York Jets · QB Cade Whitfield (Texas)<small>commissioner announces · podium feed</small></div>
+        <div class="text">Origin event for the cascade. Owner pressure index <span class="em">92</span> — medical-flag overruled at <span class="mt">+0:00:14</span> internal-room timestamp.</div>
+      </div>
+      <div class="casc-met"><b>—</b>BRANCH ROOT</div>
+    </div>
+
+    <!-- INSIDER FIRST -->
+    <div class="casc-row">
+      <div class="casc-time">T+00:09<small>23:47:17 ET</small></div>
+      <div class="casc-lane insider">INSIDER</div>
+      <div class="casc-body">
+        <div class="who">@fowler_breaking<small>X · 1.2M flw · trust 0.91</small></div>
+        <div class="text">"Sources tell me the <span class="em">Jets are taking Whitfield</span> at 7. Owner pressure was the deciding factor…"</div>
+        <div class="reply">FIRST BREAK ↗ &nbsp;<b>14.2K</b> likes · <b>2.8K</b> RT projected by T+5:00</div>
+      </div>
+      <div class="casc-met"><b>+14.2K</b>likes · proj</div>
+    </div>
+
+    <div class="casc-row">
+      <div class="casc-time">T+00:18<small>23:47:26 ET</small></div>
+      <div class="casc-lane insider">INSIDER</div>
+      <div class="casc-body">
+        <div class="who">@glazer_OTL<small>X · 800K flw · trust 0.86</small></div>
+        <div class="text">Confirms with owner-pressure framing — adds: "Saleh in the room said he could win with the medical risk. <span class="gd">Owner agreed.</span>"</div>
+        <div class="reply">REPLY-CHAIN TO ↗ <b>@fowler_breaking</b> · co-sourcing pattern detected</div>
+      </div>
+      <div class="casc-met"><b>+9.1K</b>likes · proj</div>
+    </div>
+
+    <!-- BEAT -->
+    <div class="casc-row">
+      <div class="casc-time">T+00:31<small>23:47:39 ET</small></div>
+      <div class="casc-lane beat">BEAT</div>
+      <div class="casc-body">
+        <div class="who">@reema_mmqb<small>X · 340K flw · trust 0.82</small></div>
+        <div class="text">Quote-tweets Fowler: "The medical flag wasn't a deal-breaker — it was a leverage point. Jets used it to threaten a slide back."</div>
+        <div class="reply">QUOTE-CHAIN · adds analyst frame · cross-cited by 4 other beats by T+3:00</div>
+      </div>
+      <div class="casc-met"><b>+6.4K</b>likes · proj</div>
+    </div>
+
+    <!-- SKEPTIC -->
+    <div class="casc-row">
+      <div class="casc-time">T+00:42<small>23:47:50 ET</small></div>
+      <div class="casc-lane beat">SKEPTIC</div>
+      <div class="casc-body">
+        <div class="who">@kavi_films<small>X · 88K flw · trust 0.78</small></div>
+        <div class="text">"If you watched the <span class="em">Texas–Bama tape</span> and you're surprised Whitfield is going top-10, you're scouting the player you wanted, not the player on screen."</div>
+        <div class="reply">CONTRARIAN POLE · seeds counter-narrative used at T+05:10</div>
+      </div>
+      <div class="casc-met"><b>+11.8K</b>likes · proj</div>
+    </div>
+
+    <!-- FAN REDDIT -->
+    <div class="casc-row">
+      <div class="casc-time">T+01:05<small>23:48:13 ET</small></div>
+      <div class="casc-lane fan">FAN · REDDIT</div>
+      <div class="casc-body">
+        <div class="who">r/nyjets · u/JetsTilIDie_84<small>MEGATHREAD spawned</small></div>
+        <div class="text">"<span class="em">MEGATHREAD: PICK 7 — WE GOT OUR GUY 🟢⚪</span>" — pinned, locked to top, comments accelerating at <span class="mt">+57/min</span>.</div>
+        <div class="reply">3,400 comments by T+04:00 · 14% mention "medical" · 62% positive sentiment</div>
+      </div>
+      <div class="casc-met"><b>3.4K</b>comments / 3min</div>
+    </div>
+
+    <!-- RADIO -->
+    <div class="casc-row">
+      <div class="casc-time">T+01:12<small>23:48:20 ET</small></div>
+      <div class="casc-lane radio">RADIO</div>
+      <div class="casc-body">
+        <div class="who">WFAN · Mike from Bayonne<small>caller · 14yr regular · emotion 97</small></div>
+        <div class="text">"Mike, I been waitin' since '09 for a quarterback. <em>Nine years.</em>" — host cuts to break, returns with national-tease angle.</div>
+        <div class="reply">SEGMENT EXTENDED ↗ 14m airtime · clipped at T+18:00 by @nyjets_clips</div>
+      </div>
+      <div class="casc-met"><b>14m</b>on-air</div>
+    </div>
+
+    <!-- RIVAL GM RECHECK -->
+    <div class="casc-row">
+      <div class="casc-time">T+02:30<small>23:49:38 ET</small></div>
+      <div class="casc-lane gm">RIVAL GM</div>
+      <div class="casc-body">
+        <div class="who">BAL · Hortiz-37 (agent)<small>internal war room · trade-up DNA 91</small></div>
+        <div class="text">Re-checks board. Escalates QB2 watch — <span class="mt">22.8% of branches</span> now show BAL initiating trade-up by pick 16.</div>
+        <div class="reply">FEEDBACK LOOP · room-reaction signal incorporated into agent's prior</div>
+      </div>
+      <div class="casc-met"><b>+22.8%</b>trade-up odds</div>
+    </div>
+
+    <!-- NATIONAL MEDIA -->
+    <div class="casc-row faded">
+      <div class="casc-time">T+03:48<small>23:50:56 ET</small></div>
+      <div class="casc-lane media">NATIONAL</div>
+      <div class="casc-body">
+        <div class="who">The Athletic · auto-essay drafted<small>media-agent · publish-tier 02</small></div>
+        <div class="text">"Why the Jets bet the franchise on Cade Whitfield" — 2,400-word piece queued. Cites <span class="em">Fowler</span>, <span class="em">Patel</span>, <span class="em">Vázquez</span>. Embargo lifts T+12:00.</div>
+        <div class="reply">SYNTHESIZES · upstream insider posts → national long-form</div>
+      </div>
+      <div class="casc-met"><b>2,400</b>words queued</div>
+    </div>
+
+    <!-- COUNTER -->
+    <div class="casc-row faded">
+      <div class="casc-time">T+05:10<small>23:52:18 ET</small></div>
+      <div class="casc-lane fan">COUNTER</div>
+      <div class="casc-body">
+        <div class="who">r/nfl · top comment chain<small>180 personas · counter-narrative cluster</small></div>
+        <div class="text">"The medical was real. <span class="em">Watch the late-season tape.</span>" — picks up Lange's frame, +1.2K upvotes in 6min. Spreads to <span class="gd">3 fanbase subs</span>.</div>
+        <div class="reply">CROSS-INFLUENCE · originated from Lange (T+0:42) → r/nfl propagation</div>
+      </div>
+      <div class="casc-met"><b>+1.2K</b>upvotes / 6min</div>
+    </div>
+
+    <!-- MEME -->
+    <div class="casc-row faded">
+      <div class="casc-time">T+11:30<small>23:58:38 ET</small></div>
+      <div class="casc-lane meme">MEME / VIRAL</div>
+      <div class="casc-body">
+        <div class="who">"Veatch overruling the doctors.png"<small>4 variants in propagation · cross-platform</small></div>
+        <div class="text">Template forks: 2 pro-Jets, 1 anti-Jets, 1 league-wide. Reaches IG / TikTok at T+24:00 in <span class="mt">71%</span> of branches.</div>
+        <div class="reply">VIRAL HORIZON · cross-platform jump prediction = 24m</div>
+      </div>
+      <div class="casc-met"><b>71%</b>viral horizon</div>
+    </div>
+  </div>
+
+
+  <!-- THE CHANNELS -->
+  <div class="subhead">
+    The Channels · Same event, four rooms, four voices
+    <small>SLICE @ T+04:30 · POST-PICK · NYJ FOCUS</small>
+  </div>
+
+  <div class="channels">
+
+    <!-- X / Twitter -->
+    <div class="channel ch-x">
+      <div class="channel-head">
+        <span class="icon">𝕏</span>
+        <span>X · Search "Whitfield"</span>
+        <span class="meta">42.1K POSTS / MIN</span>
+      </div>
+      <div class="ch-body">
+
+        <div class="x-tweet">
+          <div class="x-av">F</div>
+          <div>
+            <div class="x-head"><b>Brent Fowler</b><span class="h">@fowler_breaking</span><span class="t">2m</span></div>
+            <div class="x-text">Sources tell me the <span class="em">Jets are taking Whitfield</span> at 7. Owner pressure was the deciding factor.</div>
+            <div class="x-eng"><span><b>2,841</b> RT</span><span><b>14.2K</b> ❤</span><span><b>312</b> QT</span></div>
+          </div>
+        </div>
+
+        <div class="x-tweet">
+          <div class="x-av">K</div>
+          <div>
+            <div class="x-head"><b>Kavi Lange</b><span class="h">@kavi_films</span><span class="t">3m</span></div>
+            <div class="x-text">If you watched the Texas–Bama tape and you're surprised Whitfield is going top-10, you're scouting the player you wanted, not the player on screen. <span class="tag">#NFLDraft</span></div>
+            <div class="x-eng"><span><b>2.1K</b> RT</span><span><b>11.8K</b> ❤</span></div>
+          </div>
+        </div>
+
+        <div class="x-tweet">
+          <div class="x-av">C</div>
+          <div>
+            <div class="x-head"><b>Carl Henderson</b><span class="h">@coachcarl_xs</span><span class="t">3m</span></div>
+            <div class="x-text">Y'all keep talking about the medical. Talk to me about the <span class="em">kid</span>. Jets just got their franchise.</div>
+            <div class="x-eng"><span><b>1.8K</b> RT</span><span><b>9.4K</b> ❤</span></div>
+          </div>
+        </div>
+
+        <div class="x-tweet">
+          <div class="x-av">S</div>
+          <div>
+            <div class="x-head"><b>Sherri Vázquez</b><span class="h">@sherri_jets</span><span class="t">4m</span></div>
+            <div class="x-text">Inside the room: when the medical leaked, two scouts argued for the trade-down. Veatch overruled them. <span class="mt">"We're picking the franchise."</span></div>
+            <div class="x-eng"><span><b>622</b> RT</span><span><b>3.4K</b> ❤</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reddit -->
+    <div class="channel ch-reddit">
+      <div class="channel-head">
+        <span class="icon">r/</span>
+        <span>r/nyjets · Hot</span>
+        <span class="meta">14.2K ONLINE</span>
+      </div>
+      <div class="ch-body">
+
+        <div class="r-thread">
+          <div class="r-meta"><b>u/JetsTilIDie_84</b> · MOD · <span class="karma">3.4K ⬆</span> · 4m</div>
+          <div class="r-title"><span class="flair">MEGATHREAD</span>PICK 7 — WE GOT OUR GUY 🟢⚪ (locked-top, all chat in here)</div>
+          <div class="r-comment">
+            <span class="u"><b>u/SaucyFinsUp</b> · <span class="karma">+1.8K</span> · 3m</span>
+            FINALLY. I've been on this kid since the bowl game. Medical is overblown — front office wouldn't take him at 7 if it wasn't cleared.
+          </div>
+          <div class="r-comment deep">
+            <span class="u"><b>u/Tannenbaum_Era</b> · <span class="karma">+412</span> · 2m</span>
+            Lol y'all said the same thing about Sanchez. Just enjoy it for one night before the suffering starts.
+          </div>
+        </div>
+
+        <div class="r-thread">
+          <div class="r-meta"><b>u/sackedbyrex</b> · <span class="karma">+948 ⬆</span> · 6m</div>
+          <div class="r-title">So Cleveland called and offered 3 + future 1 and we said NO?? (per Fowler)</div>
+          <div class="r-comment">
+            <span class="u"><b>u/Glennys_Glasses</b> · <span class="karma">+288</span> · 4m</span>
+            Yes and it was the right move. You don't slide on the franchise QB for picks you'll mess up anyway.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sports Radio -->
+    <div class="channel ch-radio">
+      <div class="channel-head">
+        <span class="icon">▶</span>
+        <span>WFAN · "The Drive Home"</span>
+        <span class="meta">LIVE · 23:51 ET</span>
+      </div>
+      <div class="ch-body">
+        <div class="radio-meta">▸ TRANSCRIPT · GENERATED · <b>SEG 03 · POST-PICK</b> · 04:18 ELAPSED</div>
+
+        <div class="radio-line">
+          <span class="who host">HOST · KENNY G.</span>
+          Alright, Jets fans, I see the lines lit up like Christmas. Mike from Bayonne, you're up — talk to me, baby.
+        </div>
+
+        <div class="radio-line">
+          <span class="who caller">CALLER · MIKE / BAYONNE</span>
+          Kenny — I been waitin' since <em>'09</em> for a quarterback. <em>Nine years.</em> If this kid's medical is bad I swear to God I'm — I'm <span class="b">done</span>, Kenny.
+        </div>
+
+        <div class="radio-line">
+          <span class="who host">HOST · KENNY G.</span>
+          Mike, breathe, brother. Veatch knows the medical. He saw the chart. You think he picks this kid at 7 if his shoulder's hangin' by a thread?
+        </div>
+
+        <div class="radio-line">
+          <span class="who caller">CALLER · MIKE / BAYONNE</span>
+          Kenny — that's <em>exactly</em> what they said about Sanchez. <em>Exactly</em>.
+        </div>
+
+        <div class="radio-line">
+          <span class="who bumper">▸ BUMPER · 23:55:00 · CUT TO BREAK</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slack -->
+    <div class="channel ch-slack">
+      <div class="channel-head">
+        <span class="icon">#</span>
+        <span>Beat-Writer Slack · Private</span>
+        <span class="meta">14 ONLINE</span>
+      </div>
+      <div class="ch-body">
+        <div class="slack-channel"># <b>the-room-2026</b> · invite-only · journalists.nfl.draft</div>
+
+        <div class="slack-msg">
+          <div class="slack-av">F</div>
+          <div>
+            <div class="slack-head"><b>Brent F.</b><span class="t">11:47 PM</span></div>
+            <div class="slack-text">whitfield it is. owner overruled. medical was the leverage, not the block.</div>
+            <div class="slack-react"><span>👀<b>9</b></span><span>🔥<b>4</b></span></div>
+          </div>
+        </div>
+
+        <div class="slack-msg">
+          <div class="slack-av">R</div>
+          <div>
+            <div class="slack-head"><b>Reema P.</b><span class="t">11:47 PM</span></div>
+            <div class="slack-text">^ <span class="em">confirmed</span>. two scouts argued slide-down. veatch shut it down in 90 sec.</div>
+          </div>
+        </div>
+
+        <div class="slack-msg">
+          <div class="slack-av">D</div>
+          <div>
+            <div class="slack-head"><b>Doug C.</b><span class="t">11:48 PM</span></div>
+            <div class="slack-text">anyone hearing on saints? loomis is up to something. third QB sneaking into top 12.</div>
+            <div class="slack-react"><span>👂<b>6</b></span></div>
+          </div>
+        </div>
+
+        <div class="slack-msg">
+          <div class="slack-av">K</div>
+          <div>
+            <div class="slack-head"><b>Kavi L.</b><span class="t">11:49 PM</span></div>
+            <div class="slack-text">nobody in here has watched the late-season tape and it shows. medical isn't the story. <span class="mt">accuracy under pressure</span> is.</div>
+          </div>
+        </div>
+
+        <div class="slack-msg">
+          <div class="slack-av">S</div>
+          <div>
+            <div class="slack-head"><b>Sherri V.</b><span class="t">11:50 PM</span></div>
+            <div class="slack-text">dropping a building-source piece in 8. veatch quote: <span class="em">"we're picking the franchise."</span></div>
+            <div class="slack-react"><span>📝<b>5</b></span><span>👀<b>3</b></span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ======================== ECOSYSTEM ======================== -->
+<section class="section">
+  <div class="section-head">
+    <div>
+      <span class="index">SECTION 04 // AGGREGATE SIGNALS</span>
+      <h2>312 posts roll up to <em>three numbers</em> the room actually uses.</h2>
+    </div>
+    <div class="meta">
+      <b>184</b> agents online<br/>
+      Beat&nbsp;<b>14</b> · Insider&nbsp;<b>9</b> · Fan&nbsp;<b>161</b><br/>
+      Sentiment refresh · <b>4s</b>
+    </div>
+  </div>
+
+  <div class="eco">
+
+    <!-- BEAT WRITER FEED -->
+    <div class="feed-card">
+      <div class="panel-head">
+        <span><span class="pulse"></span> &nbsp;BEAT-WRITER & INSIDER STREAM</span>
+        <span class="tag">SIMULATED · TIMESTAMPS RELATIVE</span>
+      </div>
+      <div class="feed-list">
+
+        <div class="tweet">
+          <div class="tw-avatar">F</div>
+          <div>
+            <div class="tw-head">
+              <b>Brent Fowler</b>
+              <span class="h">@fowler_breaking</span>
+              <span class="agent-flag">AGENT · INSIDER-03</span>
+              <span class="t">2m</span>
+            </div>
+            <div class="tw-text">Sources tell me the <span class="em">Jets are taking Whitfield</span> at 7. Owner pressure was the deciding factor. Cleveland called late but the price was 3 + a future 1.</div>
+            <div class="tw-meta">
+              <span><b class="v">2,841</b> RT</span>
+              <span><b class="v">14.2K</b> LIKE</span>
+              <span><b class="v">312</b> QT</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tweet">
+          <div class="tw-avatar">R</div>
+          <div>
+            <div class="tw-head">
+              <b>Reema Patel</b>
+              <span class="h">@reema_mmqb</span>
+              <span class="agent-flag">AGENT · BEAT-09</span>
+              <span class="t">3m</span>
+            </div>
+            <div class="tw-text">The <span class="mt">Whitfield medical flag</span> wasn't a deal-breaker — it was a leverage point. Jets used it to threaten a slide back. Won't surprise anyone in this building.</div>
+            <div class="tw-meta">
+              <span><b class="v">1,108</b> RT</span>
+              <span><b class="v">6.4K</b> LIKE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tweet">
+          <div class="tw-avatar">D</div>
+          <div>
+            <div class="tw-head">
+              <b>Doug Cusick</b>
+              <span class="h">@cusickNFL</span>
+              <span class="agent-flag">AGENT · INSIDER-01</span>
+              <span class="t">5m</span>
+            </div>
+            <div class="tw-text">Hearing rumblings on a <span class="em">third QB</span> off the board before pick 12. Saints are quietly a team to watch. Loomis isn't done.</div>
+            <div class="tw-meta">
+              <span><b class="v">893</b> RT</span>
+              <span><b class="v">4.9K</b> LIKE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tweet">
+          <div class="tw-avatar">K</div>
+          <div>
+            <div class="tw-head">
+              <b>Kavi Lange</b>
+              <span class="h">@kavi_films</span>
+              <span class="agent-flag">AGENT · BEAT-04</span>
+              <span class="t">8m</span>
+            </div>
+            <div class="tw-text">If you watched the Texas-Bama tape and you're surprised Whitfield is going top-10, you're scouting the player you wanted, not the player on screen. <span class="tag">#NFLDraft</span></div>
+            <div class="tw-meta">
+              <span><b class="v">2,144</b> RT</span>
+              <span><b class="v">11.8K</b> LIKE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tweet">
+          <div class="tw-avatar">S</div>
+          <div>
+            <div class="tw-head">
+              <b>Sara Holm</b>
+              <span class="h">@holm_athletic</span>
+              <span class="agent-flag">AGENT · BEAT-12</span>
+              <span class="t">11m</span>
+            </div>
+            <div class="tw-text">Inside Veatch's room: the second the medical leaked, two scouts argued for the trade-down. He overruled them. <span class="em">"We're picking the franchise."</span></div>
+            <div class="tw-meta">
+              <span><b class="v">622</b> RT</span>
+              <span><b class="v">3.4K</b> LIKE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tweet">
+          <div class="tw-avatar">M</div>
+          <div>
+            <div class="tw-head">
+              <b>Marcus Riley</b>
+              <span class="h">@riley_breaking</span>
+              <span class="agent-flag">AGENT · INSIDER-07</span>
+              <span class="t">14m</span>
+            </div>
+            <div class="tw-text">Pats taking <span class="mt">Bass at 4</span> over the consensus QB is the kind of pick a front office makes when the owner is on vacation in St. Barts.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="card heatmap-card">
+      <h3>Sentiment · Hour-by-Hour</h3>
+      <div class="sub">17 FRANCHISES × 12 HOURS · PRE/POST PICK 07 · INJECTED SHOCKS HIGHLIGHTED</div>
+
+      <div class="hm-axis">
+        <span>−6h</span><span>−3h</span><span>PICK</span><span>+3h</span><span>+6h</span>
+      </div>
+      <div class="hm-grid">
+        <div class="label">JETS</div>
+        <div class="hm-cell n2"></div><div class="hm-cell n3"></div><div class="hm-cell n4 spike"></div><div class="hm-cell n4"></div><div class="hm-cell n3"></div><div class="hm-cell n2"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s4"></div><div class="hm-cell s4"></div><div class="hm-cell s3"></div>
+
+        <div class="label">BROWNS</div>
+        <div class="hm-cell n3"></div><div class="hm-cell n4"></div><div class="hm-cell n3"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div><div class="hm-cell n1"></div><div class="hm-cell n2"></div>
+
+        <div class="label">PATRIOTS</div>
+        <div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell n2"></div><div class="hm-cell n4 spike"></div><div class="hm-cell n5"></div><div class="hm-cell n4"></div><div class="hm-cell n3"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n1"></div><div class="hm-cell s1"></div>
+
+        <div class="label">GIANTS</div>
+        <div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n1"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s4"></div><div class="hm-cell s4"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div>
+
+        <div class="label">JAGS</div>
+        <div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s4 spike"></div><div class="hm-cell s5"></div><div class="hm-cell s5"></div><div class="hm-cell s4"></div><div class="hm-cell s3"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div>
+
+        <div class="label">RAIDERS</div>
+        <div class="hm-cell n1"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n1"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div><div class="hm-cell n1"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div>
+
+        <div class="label">SAINTS</div>
+        <div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n3"></div><div class="hm-cell n4"></div><div class="hm-cell n5 spike"></div><div class="hm-cell n4"></div><div class="hm-cell n3"></div><div class="hm-cell n3"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n1"></div><div class="hm-cell s1"></div>
+
+        <div class="label">BEARS</div>
+        <div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div><div class="hm-cell n1"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div><div class="hm-cell n3"></div><div class="hm-cell n2"></div><div class="hm-cell n2"></div>
+
+        <div class="label">PANTHERS</div>
+        <div class="hm-cell n1"></div><div class="hm-cell n1"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div><div class="hm-cell s1"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div>
+
+        <div class="label">TITANS</div>
+        <div class="hm-cell s2"></div><div class="hm-cell s3"></div><div class="hm-cell s4"></div><div class="hm-cell s4"></div><div class="hm-cell s4 spike"></div><div class="hm-cell s5"></div><div class="hm-cell s4"></div><div class="hm-cell s3"></div><div class="hm-cell s3"></div><div class="hm-cell s2"></div><div class="hm-cell s2"></div><div class="hm-cell s1"></div>
+      </div>
+
+      <div class="hm-foot">
+        <span>NEG <b>·</b> NEU <b>·</b> POS</span>
+        <span><b>SPIKE</b> = injection-driven pivot</span>
+      </div>
+    </div>
+
+    <!-- FAN REACTION -->
+    <div class="fans-card">
+      <h3>NYJ Fanbase · Real-Time</h3>
+      <div class="sub">REDDIT · X · DISCORD · POST-PICK MINUTE 04</div>
+
+      <div class="fans-meter"></div>
+      <div class="fans-axis">
+        <span>OUTRAGE</span><span>SKEPTICAL</span><span>NEUTRAL</span><span>HOPEFUL</span><span>EUPHORIA</span>
+      </div>
+
+      <div class="word-cloud">
+        <span class="xl">finally</span>
+        <span class="lg">QB1</span>
+        <span class="md">medical??</span>
+        <span class="lg mt">trust</span>
+        <span class="sm">overpaid</span>
+        <span class="md">Veatch</span>
+        <span class="xl gd">savior</span>
+        <span class="md">slide</span>
+        <span class="lg">Texas</span>
+        <span class="sm">forced</span>
+        <span class="md mt">arm talent</span>
+        <span class="sm">narrative</span>
+        <span class="lg">owner</span>
+        <span class="md">RG3</span>
+        <span class="sm">healthy?</span>
+        <span class="md mt">leadership</span>
+      </div>
+
+      <div class="fan-bars">
+        <div class="fan-bar pos">
+          <span>HOPEFUL</span>
+          <div class="t"><span style="width:62%"></span></div>
+          <span class="v">62%</span>
+        </div>
+        <div class="fan-bar pos">
+          <span>EUPHORIC</span>
+          <div class="t"><span style="width:14%"></span></div>
+          <span class="v">14%</span>
+        </div>
+        <div class="fan-bar">
+          <span>SKEPTICAL</span>
+          <div class="t"><span style="width:18%"></span></div>
+          <span class="v">18%</span>
+        </div>
+        <div class="fan-bar">
+          <span>OUTRAGE</span>
+          <div class="t"><span style="width:6%"></span></div>
+          <span class="v">6%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================== MLS DUAL MODE ======================== -->
+<section class="section">
+  <div class="mls">
+    <div class="mls-head">
+      <div>
+        <div class="e">SECTION 05 // DUAL MODE — MLS SUMMER WINDOW 2026</div>
+        <h2>Same engine. <b>Different ball.</b><br/>Different war room.</h2>
+      </div>
+      <div class="right">
+        WINDOW OPENS&nbsp;&nbsp;<b>13 JUL 2026</b><br/>
+        TARGETS TRACKED&nbsp;&nbsp;<b>47</b><br/>
+        EUROPEAN CLUBS MODELED&nbsp;&nbsp;<b>112</b>
+      </div>
+    </div>
+
+    <div class="mls-grid">
+
+      <!-- SVG flow diagram -->
+      <div class="mls-flow">
+        <h4>BID FLOW · Joël Kessé · Atlanta United → ?</h4>
+        <svg class="flow-svg" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#7DF9C9"/>
+            </marker>
+            <marker id="arr-em" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#FF5B14"/>
+            </marker>
+            <marker id="arr-mu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5C606F"/>
+            </marker>
+          </defs>
+
+          <!-- center node -->
+          <g>
+            <rect x="240" y="125" width="120" height="50" fill="#181B25" stroke="#FF5B14" stroke-width="1.5"/>
+            <text x="300" y="148" text-anchor="middle" font-family="Fraunces" font-size="14" font-style="italic" fill="#F2EBDD">J. Kessé</text>
+            <text x="300" y="164" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8A8E9C" letter-spacing="1">CB · 22 · ATL UTD</text>
+          </g>
+
+          <!-- left buyer -->
+          <g>
+            <rect x="20" y="20" width="160" height="50" fill="#0A0B0F" stroke="#383D4D"/>
+            <text x="100" y="42" text-anchor="middle" font-family="Geist" font-weight="500" font-size="13" fill="#F2EBDD">Bayer Leverkusen</text>
+            <text x="100" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#FF5B14" letter-spacing="1">€18M + 15% SELL</text>
+            <line x1="180" y1="50" x2="245" y2="135" stroke="#FF5B14" stroke-width="1.5" marker-end="url(#arr-em)"/>
+            <text x="200" y="100" font-family="JetBrains Mono" font-size="9" fill="#FF5B14">P=0.68</text>
+          </g>
+
+          <g>
+            <rect x="20" y="120" width="160" height="50" fill="#0A0B0F" stroke="#383D4D"/>
+            <text x="100" y="142" text-anchor="middle" font-family="Geist" font-weight="500" font-size="13" fill="#F2EBDD">Sporting CP</text>
+            <text x="100" y="158" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7DF9C9" letter-spacing="1">€14M LOAN-OPT</text>
+            <line x1="180" y1="145" x2="240" y2="148" stroke="#7DF9C9" stroke-width="1.5" marker-end="url(#arr)"/>
+            <text x="200" y="138" font-family="JetBrains Mono" font-size="9" fill="#7DF9C9">P=0.41</text>
+          </g>
+
+          <g>
+            <rect x="20" y="220" width="160" height="50" fill="#0A0B0F" stroke="#383D4D"/>
+            <text x="100" y="242" text-anchor="middle" font-family="Geist" font-weight="500" font-size="13" fill="#F2EBDD">Brighton & H.A.</text>
+            <text x="100" y="258" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#5C606F" letter-spacing="1">SCOUTING ONLY</text>
+            <line x1="180" y1="245" x2="245" y2="170" stroke="#5C606F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-mu)"/>
+            <text x="200" y="200" font-family="JetBrains Mono" font-size="9" fill="#5C606F">P=0.12</text>
+          </g>
+
+          <!-- right outcomes -->
+          <g>
+            <rect x="420" y="40" width="160" height="40" fill="#0A0B0F" stroke="#FF5B14"/>
+            <text x="500" y="58" text-anchor="middle" font-family="Geist" font-weight="500" font-size="12" fill="#F2EBDD">SOLD · BUNDESLIGA</text>
+            <text x="500" y="72" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#FF5B14" letter-spacing="1">52% · CASH-IN +€7M</text>
+            <line x1="360" y1="140" x2="420" y2="62" stroke="#FF5B14" stroke-width="1.5" marker-end="url(#arr-em)"/>
+          </g>
+          <g>
+            <rect x="420" y="100" width="160" height="40" fill="#0A0B0F" stroke="#7DF9C9"/>
+            <text x="500" y="118" text-anchor="middle" font-family="Geist" font-weight="500" font-size="12" fill="#F2EBDD">RETAINED · NEW DEAL</text>
+            <text x="500" y="132" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7DF9C9" letter-spacing="1">31% · DSP HOLDS</text>
+            <line x1="360" y1="148" x2="420" y2="120" stroke="#7DF9C9" stroke-width="1.5" marker-end="url(#arr)"/>
+          </g>
+          <g>
+            <rect x="420" y="160" width="160" height="40" fill="#0A0B0F" stroke="#D4B254"/>
+            <text x="500" y="178" text-anchor="middle" font-family="Geist" font-weight="500" font-size="12" fill="#F2EBDD">LOAN · LIGA NOS</text>
+            <text x="500" y="192" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#D4B254" letter-spacing="1">14% · DEV PATH</text>
+            <line x1="360" y1="155" x2="420" y2="178" stroke="#D4B254" stroke-width="1.5" marker-end="url(#arr)"/>
+          </g>
+          <g>
+            <rect x="420" y="220" width="160" height="40" fill="#0A0B0F" stroke="#5C606F"/>
+            <text x="500" y="238" text-anchor="middle" font-family="Geist" font-weight="500" font-size="12" fill="#F2EBDD">BID COLLAPSES</text>
+            <text x="500" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#5C606F" letter-spacing="1">3% · MED FAILS</text>
+            <line x1="360" y1="170" x2="420" y2="238" stroke="#5C606F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-mu)"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- target dossier -->
+      <div class="mls-target">
+        <div class="num">SUBJECT · MLS-CB-26-008</div>
+        <h4>Joël <em>Kessé</em></h4>
+        <div class="from">CB · Atlanta United · Côte d'Ivoire · 22 yo</div>
+
+        <div class="target-stats">
+          <div class="row"><span>Apps · '25</span><b>32</b></div>
+          <div class="row"><span>Mins / 90</span><b>89</b></div>
+          <div class="row"><span>Aerial Win %</span><b>71.4</b></div>
+          <div class="row"><span>Pass Acc.</span><b>89.2%</b></div>
+          <div class="row"><span>Prog. Carries</span><b>4.1</b></div>
+          <div class="row"><span>xT / 90</span><b>0.31</b></div>
+          <div class="row"><span>Caps</span><b>4</b></div>
+          <div class="row"><span>TM Value</span><b>€11.8M</b></div>
+        </div>
+
+        <div class="market-bid">
+          <div class="l">▸ NEW EUROPEAN BID</div>
+          <div class="v">Bayer Leverkusen <small>· €18M + 15% sell-on</small></div>
+          <div class="delta">+€6.2M vs. Transfermarkt · 22:08 CET</div>
+        </div>
+      </div>
+
+      <!-- scenarios -->
+      <div class="mls-scenarios">
+        <h4>Front-Office Branches</h4>
+        <div class="sub">10K SIMS · ATL UTD SPORTING DIRECTOR · GARTH LAGERWEY MODEL</div>
+
+        <div class="scen-row">
+          <div class="dot high"></div>
+          <div><b>Accept Bayer offer.</b> Reinvest in winger + DM. Leak that ATL "developed and elevated" — sentiment +0.34.</div>
+          <div class="pct">52%<small>P</small></div>
+        </div>
+
+        <div class="scen-row">
+          <div class="dot med"></div>
+          <div><b>Counter at €24M.</b> Bayer walks 61% of branches. Loan-with-option to Sporting becomes default fallback.</div>
+          <div class="pct">22%<small>P</small></div>
+        </div>
+
+        <div class="scen-row">
+          <div class="dot low"></div>
+          <div><b>Hold + extend.</b> 5-yr DP contract, image rights upside. Risk = MLS roster cap squeeze in '27.</div>
+          <div class="pct">14%<small>P</small></div>
+        </div>
+
+        <div class="scen-row">
+          <div class="dot med"></div>
+          <div><b>Three-way bid auction.</b> Brighton enters. Final price clears <b>€26M+</b>. Coach in revolt — needs the player for ACL run.</div>
+          <div class="pct">9%<small>P</small></div>
+        </div>
+
+        <div class="scen-row">
+          <div class="dot low"></div>
+          <div><b>Medical fails @ Leverkusen.</b> Player returns devalued. Sporting renegotiates loan terms downward.</div>
+          <div class="pct">3%<small>P</small></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================== INPUTS ======================== -->
+<section class="section">
+  <div class="section-head">
+    <div>
+      <span class="index">SECTION 06 // SEED DATA & INPUTS</span>
+      <h2>Your data, his eye, <em>their behavior.</em></h2>
+    </div>
+    <div class="meta">
+      Ingestion · <b>nightly + event-driven</b><br/>
+      Provenance · <b>per-record signed</b><br/>
+      Vectorized · <b>1.4M tokens / hr</b>
+    </div>
+  </div>
+
+  <div class="inputs">
+    <div class="input-card">
+      <span class="stamp">SOURCE · 01</span>
+      <div class="num">PROPRIETARY</div>
+      <h3>Scout grades, <em>cross-checked</em>, decade-deep.</h3>
+      <p>Every report your shop has written — region scouts, area scouts, cross-checkers, national. Tagged by author, revision, conviction. The agents inherit your grading scale, not a generic one.</p>
+      <div class="marks">
+        <span class="hot">Scout reports · 41,820</span>
+        <span>Cross-checks</span>
+        <span>Author signature</span>
+        <span>Conviction tags</span>
+      </div>
+    </div>
+
+    <div class="input-card">
+      <span class="stamp">SOURCE · 02</span>
+      <div class="num">BIOMETRIC</div>
+      <h3>Combine, <em>pro days</em>, GPS, force plate.</h3>
+      <p>Indianapolis pulls. Pro day re-tests. In-season GPS load. Force-plate asymmetry. Sleep and HRV when available. The radar that drives the radar.</p>
+      <div class="marks">
+        <span class="mt">Combine 2018–26</span>
+        <span>RAS</span>
+        <span>Pro Day deltas</span>
+        <span>Catapult / KINEXON</span>
+        <span>S2 Cognition</span>
+      </div>
+    </div>
+
+    <div class="input-card">
+      <span class="stamp">SOURCE · 03</span>
+      <div class="num">BEHAVIORAL</div>
+      <h3>How <em>they</em> have always picked, signed, slid.</h3>
+      <p>Public draft & transfer histories of every rival GM and Sporting Director — fitted into a behavioral profile. Risk tolerance, cap posture, owner relationship, contract leverage, media discipline.</p>
+      <div class="marks">
+        <span>GM histories · 72</span>
+        <span>SD histories · 41</span>
+        <span class="hot">Owner pressure</span>
+        <span>Cap posture</span>
+        <span>Trade DNA</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================== METHODOLOGY MANIFESTO ======================== -->
+<section class="manifesto">
+  <div class="manifesto-inner">
+    <div class="manifesto-eyebrow">
+      THE THESIS<br/>
+      <span>WHY THIS, WHY NOW, WHY US</span>
+    </div>
+
+    <div>
+      <h2>
+        Static models score the player.<br/>
+        <em>DRO simulates the room.</em><br/>
+        Your firm gets to <span class="gd">rehearse the night</span> ten thousand times before kickoff —<br/>
+        with every other front office, every beat reporter, and every fan base playing themselves.<br/>
+        <span style="display:block; margin-top:24px; font-size:0.42em; color:var(--mute); letter-spacing:0.04em;">Decision Rehearsal Operations · powered by the Mirofish multi-agent engine.</span>
+      </h2>
+
+      <div class="manifesto-foot">
+        <div class="manifesto-cell">
+          <div class="v"><em>184</em></div>
+          <div class="l">Distinct agent personas in the active sim</div>
+        </div>
+        <div class="manifesto-cell">
+          <div class="v"><em>10K</em></div>
+          <div class="l">Branch resolutions per scenario</div>
+        </div>
+        <div class="manifesto-cell">
+          <div class="v"><em>4.2s</em></div>
+          <div class="l">Mean re-resolve · per branch · per shock</div>
+        </div>
+        <div class="manifesto-cell">
+          <div class="v"><em>2</em></div>
+          <div class="l">Sports today — NFL & MLS. Adaptable to any league with public history.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================== FOOTER ======================== -->
+<footer>
+  <div>
+    <b>DRO</b> · DECISION REHEARSAL OPERATIONS<br/>
+    Internal preview · v0.4 · prepared for agency leadership
+  </div>
+  <div style="text-align:center;">
+    BUILT ON <b>MIROFISH</b> MULTI-AGENT ENGINE<br/>
+    mirofish-demo.pages.dev
+  </div>
+  <div class="end">
+    NFL DRAFT 2026 · MLS SUMMER 2026<br/>
+    DATA SEEDS · YOUR PROPRIETARY SCOUTING ARCHIVE
   </div>
 </footer>
-
-<script>
-  // Generate simulation trajectories for the river plot
-  (function() {
-    const traj = document.getElementById('trajectories');
-    if (!traj) return;
-
-    const colors = ['#c9a857', '#d9b86b', '#7eb6b6', '#e8654d'];
-    const numPaths = 36;
-
-    // Anchor points for the median curve
-    const anchors = [
-      { x: 40,  y: 120 },
-      { x: 180, y: 100 },
-      { x: 260, y: 105 },
-      { x: 380, y: 130 },
-      { x: 480, y: 135 },
-      { x: 580, y: 148 },
-      { x: 700, y: 138 },
-      { x: 780, y: 128 }
-    ];
-
-    // Spread (variance) at each x — narrow → wide → narrow
-    const spreads = [10, 18, 22, 38, 52, 60, 50, 42];
-
-    function smoothPath(pts) {
-      let d = `M ${pts[0].x},${pts[0].y}`;
-      for (let i = 1; i < pts.length; i++) {
-        const prev = pts[i - 1];
-        const curr = pts[i];
-        const cx1 = prev.x + (curr.x - prev.x) * 0.5;
-        const cy1 = prev.y;
-        const cx2 = prev.x + (curr.x - prev.x) * 0.5;
-        const cy2 = curr.y;
-        d += ` C ${cx1},${cy1} ${cx2},${cy2} ${curr.x},${curr.y}`;
-      }
-      return d;
-    }
-
-    for (let i = 0; i < numPaths; i++) {
-      // Generate a path that perturbs from the anchors with growing variance
-      const pts = anchors.map((a, idx) => {
-        const noise = (Math.random() - 0.5) * spreads[idx];
-        return { x: a.x, y: Math.max(45, Math.min(290, a.y + noise)) };
-      });
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', smoothPath(pts));
-      const isOutlier = i % 8 === 0;
-      path.setAttribute('stroke', isOutlier ? '#e8654d' : '#c9a857');
-      path.setAttribute('stroke-width', isOutlier ? '0.9' : '0.6');
-      path.setAttribute('opacity', isOutlier ? '0.45' : '0.22');
-      path.setAttribute('fill', 'none');
-      traj.appendChild(path);
-    }
-  })();
-
-  // Generate divergence matrix rows
-  (function() {
-    const rows = [
-      { id: 'row-mcmillan',  pattern: 'medium' },
-      { id: 'row-hunter',    pattern: 'tight' },
-      { id: 'row-ward',      pattern: 'wide' },
-      { id: 'row-walker',    pattern: 'split' },
-      { id: 'row-loveland',  pattern: 'tight' },
-      { id: 'row-henderson', pattern: 'wide' }
-    ];
-
-    function colorFor(rank, pattern, idx) {
-      // rank in [0,1], 0 = highly ranked, 1 = low rank
-      // Map to gold (high) → dim (low) with coral hot-spots
-      if (pattern === 'split') {
-        // Two clusters
-        if (idx < 8 || idx > 24) return shade(0.15);
-        if (idx > 12 && idx < 20) return shade(0.85);
-        return shade(0.5);
-      }
-      if (pattern === 'tight') return shade(0.25 + (Math.random() - 0.5) * 0.15);
-      if (pattern === 'wide')  return shade(0.5 + (Math.random() - 0.5) * 0.85);
-      return shade(0.4 + (Math.random() - 0.5) * 0.5);
-    }
-
-    function shade(v) {
-      // v 0 (high rank/gold) to 1 (low rank/dim)
-      v = Math.max(0, Math.min(1, v));
-      if (v < 0.15) return '#e8654d'; // coral hotspots
-      if (v < 0.35) return '#d9b86b'; // bright gold
-      if (v < 0.55) return '#9a7e3f'; // muted gold
-      if (v < 0.75) return '#3d4658'; // dim
-      return '#22293a'; // darkest
-    }
-
-    rows.forEach(r => {
-      const el = document.getElementById(r.id);
-      if (!el) return;
-      for (let i = 0; i < 32; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'div-cell';
-        cell.style.background = colorFor(i / 32, r.pattern, i);
-        el.appendChild(cell);
-      }
-    });
-  })();
-
-  // Generate agent network nodes + edges
-  (function() {
-    const nodesG = document.getElementById('agent-nodes');
-    const edgesG = document.getElementById('agent-edges');
-    if (!nodesG || !edgesG) return;
-
-    const NS = 'http://www.w3.org/2000/svg';
-    const cx = 300, cy = 240;
-    const teams = 32;
-    const teamRadius = 195;
-    const agentsPerTeam = 6; // visual approximation
-
-    const teamCenters = [];
-
-    for (let t = 0; t < teams; t++) {
-      const angle = (t / teams) * Math.PI * 2 - Math.PI / 2;
-      const tx = cx + Math.cos(angle) * teamRadius;
-      const ty = cy + Math.sin(angle) * teamRadius;
-      teamCenters.push({ x: tx, y: ty });
-
-      // Team glow
-      const glow = document.createElementNS(NS, 'circle');
-      glow.setAttribute('cx', tx);
-      glow.setAttribute('cy', ty);
-      glow.setAttribute('r', 22);
-      glow.setAttribute('fill', 'url(#teamGlow)');
-      nodesG.appendChild(glow);
-
-      // Team center node
-      const c = document.createElementNS(NS, 'circle');
-      c.setAttribute('cx', tx);
-      c.setAttribute('cy', ty);
-      c.setAttribute('r', 3.2);
-      c.setAttribute('fill', '#c9a857');
-      c.setAttribute('opacity', '0.85');
-      nodesG.appendChild(c);
-
-      // Agent dots around team center
-      for (let a = 0; a < agentsPerTeam; a++) {
-        const aAngle = Math.random() * Math.PI * 2;
-        const aDist = 6 + Math.random() * 10;
-        const ax = tx + Math.cos(aAngle) * aDist;
-        const ay = ty + Math.sin(aAngle) * aDist;
-        const dot = document.createElementNS(NS, 'circle');
-        dot.setAttribute('cx', ax);
-        dot.setAttribute('cy', ay);
-        dot.setAttribute('r', 1.2);
-        dot.setAttribute('fill', '#ede4d3');
-        dot.setAttribute('opacity', '0.55');
-        nodesG.appendChild(dot);
-      }
-
-      // Edge to media center
-      const edge = document.createElementNS(NS, 'line');
-      edge.setAttribute('x1', tx);
-      edge.setAttribute('y1', ty);
-      edge.setAttribute('x2', cx);
-      edge.setAttribute('y2', cy);
-      edge.setAttribute('stroke', '#2a3142');
-      edge.setAttribute('stroke-width', '0.4');
-      edge.setAttribute('opacity', '0.4');
-      edgesG.appendChild(edge);
-    }
-
-    // Some inter-team edges (information leakage)
-    for (let i = 0; i < 22; i++) {
-      const a = Math.floor(Math.random() * teams);
-      let b = Math.floor(Math.random() * teams);
-      while (b === a) b = Math.floor(Math.random() * teams);
-      const edge = document.createElementNS(NS, 'line');
-      edge.setAttribute('x1', teamCenters[a].x);
-      edge.setAttribute('y1', teamCenters[a].y);
-      edge.setAttribute('x2', teamCenters[b].x);
-      edge.setAttribute('y2', teamCenters[b].y);
-      edge.setAttribute('stroke', '#c9a857');
-      edge.setAttribute('stroke-width', '0.3');
-      edge.setAttribute('opacity', '0.18');
-      edgesG.appendChild(edge);
-    }
-  })();
-</script>
 
 </body>
 </html>
