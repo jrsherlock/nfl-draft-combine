@@ -1,8 +1,8 @@
 # DRO — Behavioral Simulation for Player Personnel
 
-> *"Your data tells you what a player **is**. MiroFish tells you how the room is going to behave when he slides."*
+> *"Your data tells you what a player **is**. DRO tells you how the room is going to behave when he slides."*
 
-A concept site for **DRO**, a behavioral load-testing sandbox for front offices. DRO is powered by a multi-agent persona engine called **MiroFish** that runs your draft board through ten thousand parallel realities — rival GMs, beat writers, agent reps, fan bases — before a single pick is on the clock.
+A concept site for **DRO** (Decision Rehearsal Operations) — a behavioral load-testing sandbox for front offices. DRO's multi-agent persona engine runs your draft board through ten thousand parallel realities — rival GMs, beat writers, agent reps, fan bases — before a single pick is on the clock.
 
 **Live site:** [jrsherlock.github.io/nfl-draft-combine](https://jrsherlock.github.io/nfl-draft-combine/)
 
@@ -20,7 +20,7 @@ A two-page static site presenting the DRO product concept and a working engine-d
 
 ## The pitch, in one paragraph
 
-Static models score the player. DRO scores the *room*. Seeded by your proprietary scouting reports, Combine biometrics, transfer-market profiles, and historical board tendencies, MiroFish instantiates a curated cast of 1,184 fitted personas — each carrying its own tone, posting cadence, source network, bias dials, and platform-native voice. Inject a behavioral shock (an eleventh-hour medical flag, a leak from a rival war room, a surprise bid) and the engine re-resolves all downstream agent decisions in roughly 4.2 seconds per branch. 312 posts roll up to three numbers the room actually uses.
+Static models score the player. DRO scores the *room*. Seeded by your proprietary scouting reports, Combine biometrics, transfer-market profiles, and historical board tendencies, DRO instantiates a curated cast of 1,184 fitted personas — each carrying its own tone, posting cadence, source network, bias dials, and platform-native voice. Inject a behavioral shock (an eleventh-hour medical flag, a leak from a rival war room, a surprise bid) and the engine re-resolves all downstream agent decisions in roughly 4.2 seconds per branch. 312 posts roll up to three numbers the room actually uses.
 
 Same engine works for the NFL Draft, R2–R3, MLS Summer Window, UEFA January Window, Combine re-pricing, free-agency 72hr, and a generic trade-deadline sandbox.
 
